@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   const sessionCookie = request.cookies.get('nadia_session')?.value;
   const verifiedToken = sessionCookie ? await verifyJWT(sessionCookie) : null;
   if (!verifiedToken) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Sesi Admin telah berakhir. Silakan login kembali di /admin/login' }, { status: 401 });
   }
 
   try {

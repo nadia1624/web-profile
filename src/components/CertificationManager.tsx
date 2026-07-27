@@ -104,11 +104,15 @@ export default function CertificationManager({ certifications }: CertificationMa
         body: data,
       });
 
-      if (!res.ok) throw new Error('Upload failed');
-      const result = await res.json();
+      const result = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(result.error || 'Upload failed');
+      }
+
       setCertificateImage(result.url);
-    } catch (err) {
-      alert('Failed to upload certificate image.');
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload certificate image.');
     } finally {
       setIsUploadingImg(false);
     }

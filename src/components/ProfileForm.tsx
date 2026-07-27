@@ -80,14 +80,15 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
         body: data,
       });
 
+      const result = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        throw new Error('Upload failed');
+        throw new Error(result.error || 'Failed to upload image.');
       }
 
-      const result = await res.json();
       setProfileImage(result.url);
     } catch (err: any) {
-      setUploadError('Failed to upload image. Please try again.');
+      setUploadError(err.message || 'Failed to upload image. Please try again.');
     } finally {
       setIsUploadingImage(false);
     }
