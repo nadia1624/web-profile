@@ -138,11 +138,15 @@ export default function ExperienceManager({ experiences }: ExperienceManagerProp
         body: data,
       });
 
-      if (!res.ok) throw new Error('Upload failed');
-      const result = await res.json();
+      const result = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(result.error || 'Failed to upload company logo.');
+      }
+
       setCompanyLogo(result.url);
-    } catch (err) {
-      alert('Failed to upload logo.');
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload company logo.');
     } finally {
       setIsUploadingLogo(false);
     }

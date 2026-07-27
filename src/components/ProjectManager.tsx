@@ -246,8 +246,8 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
       method: 'POST',
       body: data,
     });
-    if (!res.ok) throw new Error('Upload failed');
-    const result = await res.json();
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Upload failed');
     return result.url;
   };
 
