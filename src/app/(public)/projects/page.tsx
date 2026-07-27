@@ -19,7 +19,7 @@ export default async function ProjectsPage() {
         <span className="text-xs uppercase tracking-wider font-semibold text-purple-500">My Portfolio</span>
         <h1 className="text-3xl sm:text-4xl font-bold font-heading text-foreground mt-1">Projects & Case Studies</h1>
         <p className="text-muted-foreground mt-2">
-          Explore dynamic web applications and structured systems analysis blueprints.
+          Explore portfolio projects and structured systems analysis blueprints.
         </p>
       </FadeIn>
 

@@ -77,7 +77,7 @@ export default function ProfileCard({
           <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-border/60">
             <span className="text-[10px] font-semibold bg-purple-500/10 text-purple-500 light:text-purple-700 px-2.5 py-1 rounded-lg border border-purple-500/20 flex items-center gap-1">
               <Workflow className="w-3 h-3" />
-              Business Analyst & Systems Analyst
+              IT System Analyst
             </span>
             <span className="text-[10px] font-semibold bg-blue-500/10 text-blue-500 light:text-blue-700 px-2.5 py-1 rounded-lg border border-blue-500/20 flex items-center gap-1">
               <GraduationCap className="w-3 h-3" />
