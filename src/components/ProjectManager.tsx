@@ -265,8 +265,8 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
     try {
       const url = await uploadFile(file);
       setter(url);
-    } catch (err) {
-      alert('Failed to upload file.');
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload file.');
     } finally {
       loader(false);
     }
@@ -283,9 +283,9 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
         const url = await uploadFile(files[i]);
         urls.push(url);
       }
-      setCsScreenshots([...csScreenshots, ...urls]);
-    } catch (err) {
-      alert('Failed to upload screenshots.');
+      setCsScreenshots((prev) => [...prev, ...urls]);
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload screenshots.');
     } finally {
       setIsUploadingScreen(false);
     }
