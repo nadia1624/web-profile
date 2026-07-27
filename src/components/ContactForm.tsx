@@ -1,0 +1,166 @@
+'use client';
+
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+
+export default function ContactForm() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) {
+      setStatus('error');
+      setErrorMessage('Please fill in all required fields.');
+      return;
+    }
+    setStatus('loading');
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      setStatus('success');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch {
+      setStatus('error');
+      setErrorMessage('Failed to send message. Please try again.');
+    }
+  };
+
+  if (status === 'success') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="glass-panel p-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 text-center flex flex-col items-center justify-center py-16"
+      >
+        <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/35 text-emerald-500 flex items-center justify-center mb-6 animate-bounce">
+          <CheckCircle2 className="w-8 h-8" />
+        </div>
+        <h3 className="text-xl font-bold font-heading text-foreground">Message Sent Successfully!</h3>
+        <p className="text-muted-foreground text-sm mt-3 max-w-sm leading-relaxed">
+          Thank you for reaching out. I have received your message and will respond to you as soon as possible.
+        </p>
+        <button
+          onClick={() => setStatus('idle')}
+          className="mt-8 px-6 py-2.5 rounded-full bg-secondary border border-border text-foreground text-xs font-semibold hover:bg-purple-500/10 hover:border-purple-500/30 hover:text-purple-500 transition-all cursor-pointer active:scale-95"
+        >
+          Send Another Message
+        </button>
+      </motion.div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="glass-panel p-8 rounded-2xl border border-border space-y-6">
+      {status === 'error' && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 p-4 rounded-xl border border-red-500/20 bg-red-500/5 text-red-500 text-xs sm:text-sm"
+        >
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <span>{errorMessage}</span>
+        </motion.div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Your Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            required
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Nadia Deari"
+            className="w-full bg-secondary border border-border focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all"
+            disabled={status === 'loading'}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Email Address <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="name@example.com"
+            className="w-full bg-secondary border border-border focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all"
+            disabled={status === 'loading'}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label htmlFor="subject" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Subject
+        </label>
+        <input
+          type="text"
+          id="subject"
+          name="subject"
+          value={formData.subject}
+          onChange={handleChange}
+          placeholder="Collaboration Inquiry"
+          className="w-full bg-secondary border border-border focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all"
+          disabled={status === 'loading'}
+        />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label htmlFor="message" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Your Message <span className="text-red-500">*</span>
+        </label>
+        <textarea
+          id="message"
+          name="message"
+          required
+          rows={6}
+          value={formData.message}
+          onChange={handleChange}
+          placeholder="Hello Nadia, I would like to invite you for..."
+          className="w-full bg-secondary border border-border focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-xl px-4 py-4 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all resize-none"
+          disabled={status === 'loading'}
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={status === 'loading'}
+        className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium shadow-md shadow-purple-900/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      >
+        {status === 'loading' ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Sending Message...
+          </>
+        ) : (
+          <>
+            <Send className="w-4 h-4" />
+            Send Message
+          </>
+        )}
+      </button>
+    </form>
+  );
+}

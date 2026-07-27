@@ -1,0 +1,163 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model AdminUser {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Profile {
+  id           String   @id @default(uuid())
+  name         String
+  headline     String
+  bio          String
+  shortBio     String
+  profileImage String?
+  email        String
+  phone        String?
+  location     String?
+  linkedinUrl  String?
+  githubUrl    String?
+  instagramUrl String?
+  cvUrl        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Experience {
+  id               String    @id @default(uuid())
+  company          String
+  position         String
+  employmentType   String
+  location         String?
+  startDate        DateTime
+  endDate          DateTime?
+  isCurrent        Boolean   @default(false)
+  description      String?
+  responsibilities String[]  @default([])
+  technologies     String[]  @default([])
+  companyLogo      String?
+  displayOrder     Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Project {
+  id               String              @id @default(uuid())
+  title            String
+  slug             String              @unique
+  shortDescription String
+  fullDescription  String
+  category         String
+  role             String?
+  thumbnail        String?
+  projectImages    String[]            @default([])
+  liveUrl          String?
+  githubUrl        String?
+  featured         Boolean             @default(false)
+  displayOrder     Int                 @default(0)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  
+  technologies     ProjectTechnology[]
+  caseStudy        CaseStudy?
+}
+
+model Technology {
+  id       String              @id @default(uuid())
+  name     String              @unique
+  icon     String?
+  category String              // Business & System Analysis, Web Development, Database & Tools, Testing & Quality
+  
+  projects ProjectTechnology[]
+}
+
+model ProjectTechnology {
+  id           String     @id @default(uuid())
+  projectId    String
+  technologyId String
+  
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  technology   Technology @relation(fields: [technologyId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, technologyId])
+}
+
+model Education {
+  id           String    @id @default(uuid())
+  institution  String
+  degree       String
+  fieldOfStudy String
+  startDate    DateTime
+  endDate      DateTime?
+  description  String?
+  gpa          String?
+  achievement  String?
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Certification {
+  id                  String   @id @default(uuid())
+  name                String
+  issuingOrganization String
+  issueDate           DateTime
+  credentialId        String?
+  credentialUrl       String?
+  certificateImage    String?
+  type                String   @default("Certification") // "Certification" or "Training"
+  description         String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Skill {
+  id           String @id @default(uuid())
+  name         String
+  category     String // e.g. Front-End, Back-End, UI/UX, analysis etc.
+  icon         String?
+  displayOrder Int    @default(0)
+}
+
+model CaseStudy {
+  id           String    @id @default(uuid())
+  projectId    String    @unique
+  overview     String?
+  background   String?
+  problem      String?
+  process      String?
+  analysis     String?
+  solution     String?
+  design       String?
+  development  String?
+  testing      String?
+  result       String?
+  
+  // Specific case study sub-fields
+  businessProcess       String?
+  asIsProcess           String?
+  toBeProcess           String?
+  requirementsAnalysis  String?
+  bpmn                  String? // BPMN diagram image URL
+  uml                   String? // UML diagram image URL
+  uiUxDesign            String? // UI/UX screenshots
+  databaseDesign        String? // Database diagrams
+  applicationScreenshots String[] @default([])
+  uat                   String? // User Acceptance Testing details
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}

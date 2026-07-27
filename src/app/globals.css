@@ -1,26 +1,316 @@
 @import "tailwindcss";
 
+@custom-variant light (&:where(.light, .light *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --popover: #09090b;
+  --popover-foreground: #fafafa;
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #8b5cf6;
+  --accent-foreground: #fafafa;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #d8b4fe;
+  --radius: 0.75rem;
 }
 
-@theme inline {
+.light {
+  --background: #fbfbfe;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #09090b;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --accent: #7c3aed;
+  --accent-foreground: #09090b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #a78bfa;
+}
+
+@theme {
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--border);
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Glassmorphism utilities */
+.glass-panel {
+  background: rgba(24, 24, 27, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-panel-hover:hover {
+  background: rgba(24, 24, 27, 0.85);
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.2);
+  transform: translateY(-2px);
+}
+
+.glass-nav {
+  background: rgba(9, 9, 11, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8b5cf6;
+}
+
+/* Custom Text Cursor and Typing Animations */
+.typing-cursor::after {
+  content: '|';
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  from, to { color: transparent }
+  50% { color: #8b5cf6 }
+}
+
+/* Glowing Radial Accents */
+.radial-glow {
+  background: radial-gradient(circle 600px at var(--x, 0px) var(--y, 0px), rgba(139, 92, 246, 0.15), transparent 80%);
+}
+
+.glow-orb {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, rgba(139, 92, 246, 0) 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow-orb-secondary {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, rgba(236, 72, 153, 0) 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Admin Dashboard layout tweaks */
+.admin-sidebar {
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: #0c0c0e;
+}
+
+/* Light mode structural overrides */
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+}
+
+.light .glass-panel-hover:hover {
+  background: #ffffff;
+  border-color: rgba(124, 58, 237, 0.35);
+  box-shadow: 0 12px 32px -8px rgba(124, 58, 237, 0.16);
+}
+
+.light .glass-nav {
+  background: rgba(251, 251, 254, 0.88);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+/* Light scrollbar */
+.light ::-webkit-scrollbar-track { background: #f4f4f5; }
+.light ::-webkit-scrollbar-thumb { background: #d4d4d8; }
+.light ::-webkit-scrollbar-thumb:hover { background: #7c3aed; }
+
+/* Light section stripe backgrounds */
+.light .section-stripe {
+  background: rgba(244, 244, 245, 0.6);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Light radial/glow effects (subtle in light mode) */
+.light .radial-glow {
+  background: radial-gradient(circle 600px at var(--x, 0px) var(--y, 0px), rgba(124, 58, 237, 0.04), transparent 80%);
+}
+.light .glow-orb {
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.05) 0%, rgba(124, 58, 237, 0) 70%);
+}
+.light .glow-orb-secondary {
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.04) 0%, rgba(236, 72, 153, 0) 70%);
+}
+
+/* Light admin sidebar */
+.light .admin-sidebar {
+  border-right: 1px solid rgba(0, 0, 0, 0.07);
+  background: #f4f4f5;
+}
+
+/* Light mode form inputs — override hardcoded zinc-900 backgrounds */
+.light input,
+.light textarea,
+.light select {
+  background-color: #ffffff !important;
+  border-color: #e4e4e7 !important;
+  color: #09090b !important;
+}
+.light input::placeholder,
+.light textarea::placeholder {
+  color: #a1a1aa !important;
+}
+.light input:focus,
+.light textarea:focus,
+.light select:focus {
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 1px #7c3aed !important;
+}
+
+/* Light mode admin text & container overrides */
+.light label {
+  color: #52525b !important;
+}
+
+.light .bg-zinc-950,
+.light .bg-zinc-900,
+.light .bg-zinc-900\/50,
+.light .bg-zinc-900\/60,
+.light .bg-zinc-900\/80,
+.light .bg-zinc-900\/90,
+.light .bg-zinc-900\/40,
+.light .bg-zinc-900\/30 {
+  background-color: #ffffff !important;
+}
+
+.light .border-zinc-800,
+.light .border-zinc-850,
+.light .border-zinc-900 {
+  border-color: #e4e4e7 !important;
+}
+
+.light .text-white {
+  color: #09090b !important;
+}
+
+.light .text-zinc-300,
+.light .text-zinc-400 {
+  color: #3f3f46 !important;
+}
+
+.light .text-zinc-500 {
+  color: #71717a !important;
+}
+
+/* Light mode timeline vertical bar */
+.light .timeline-bar {
+  background: #e4e4e7;
+}
+.light .timeline-dot {
+  background: #f4f4f5;
+  border-color: #7c3aed;
+}
+
+/* Light tech/skill tags */
+.light .tech-tag {
+  background: #f4f4f5;
+  color: #52525b;
+  border-color: #e4e4e7;
+}
+
+/* Social buttons in light mode */
+.light .social-button {
+  background: #f4f4f5;
+  color: #52525b;
+  border-color: #e4e4e7;
+}
+.light .social-button:hover {
+  background: #ede9fe;
+  color: #7c3aed;
+  border-color: #c4b5fd;
 }
