@@ -14,7 +14,7 @@ export async function getExperiences() {
         { startDate: 'desc' }
       ],
     });
-    return experiences;
+    return JSON.parse(JSON.stringify(experiences));
   } catch (error) {
     console.error('Error fetching experiences:', error);
     return [];
@@ -78,7 +78,7 @@ export async function createExperience(data: {
       },
     });
 
-    return { success: true, data: experience };
+    return { success: true, data: JSON.parse(JSON.stringify(experience)) };
   } catch (error: any) {
     console.error('Create experience error:', error);
     return { success: false, error: error.message || 'Failed to create experience.' };
@@ -155,7 +155,7 @@ export async function updateExperience(
       },
     });
 
-    return { success: true, data: updated };
+    return { success: true, data: JSON.parse(JSON.stringify(updated)) };
   } catch (error: any) {
     console.error('Update experience error:', error);
     return { success: false, error: error.message || 'Failed to update experience.' };

@@ -14,7 +14,7 @@ export async function getEducationList() {
         { startDate: 'desc' }
       ],
     });
-    return list;
+    return JSON.parse(JSON.stringify(list));
   } catch (error) {
     console.error('Error fetching education list:', error);
     return [];

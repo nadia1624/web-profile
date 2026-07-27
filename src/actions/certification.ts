@@ -11,7 +11,7 @@ export async function getCertifications() {
     const certs = await prisma.certification.findMany({
       orderBy: { issueDate: 'desc' },
     });
-    return certs;
+    return JSON.parse(JSON.stringify(certs));
   } catch (error) {
     console.error('Error fetching certifications:', error);
     return [];
