@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { compressImage } from '@/lib/image-compressor';
 
 interface TechProps {
   id: string;
@@ -239,7 +240,8 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
   };
 
   // Upload helpers
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (rawFile: File) => {
+    const file = await compressImage(rawFile);
     const data = new FormData();
     data.append('file', file);
     const res = await fetch('/api/upload', {

@@ -27,6 +27,7 @@ import {
 import Image from 'next/image';
 
 import { useRouter } from 'next/navigation';
+import { compressImage } from '@/lib/image-compressor';
 
 interface ExperienceProps {
   id: string;
@@ -125,14 +126,15 @@ export default function ExperienceManager({ experiences }: ExperienceManagerProp
 
   // Logo upload handler
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
 
     setIsUploadingLogo(true);
-    const data = new FormData();
-    data.append('file', file);
-
     try {
+      const file = await compressImage(rawFile);
+      const data = new FormData();
+      data.append('file', file);
+
       const res = await fetch('/api/upload', {
         method: 'POST',
         body: data,
