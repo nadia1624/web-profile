@@ -9,7 +9,7 @@ import { getCurrentAdmin } from './auth';
 export async function getProfile() {
   try {
     const profile = await prisma.profile.findFirst();
-    return profile;
+    return profile ? JSON.parse(JSON.stringify(profile)) : null;
   } catch (error) {
     console.error('Error fetching profile:', error);
     return null;
@@ -69,7 +69,7 @@ export async function updateProfile(data: {
           cvUrl: finalCv,
         },
       });
-      return { success: true, data: updated };
+      return { success: true, data: JSON.parse(JSON.stringify(updated)) };
     } else {
       const created = await prisma.profile.create({
         data: {
@@ -87,7 +87,7 @@ export async function updateProfile(data: {
           cvUrl: data.cvUrl,
         },
       });
-      return { success: true, data: created };
+      return { success: true, data: JSON.parse(JSON.stringify(created)) };
     }
   } catch (error: any) {
     console.error('Update profile Server Action error:', error);

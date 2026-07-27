@@ -42,7 +42,7 @@ export async function getProjects() {
         { createdAt: 'desc' }
       ],
     });
-    return projects;
+    return JSON.parse(JSON.stringify(projects));
   } catch (error) {
     console.error('Error fetching projects:', error);
     return [];
@@ -65,7 +65,7 @@ export async function getProjectBySlug(slug: string) {
         caseStudy: true,
       },
     });
-    return project;
+    return project ? JSON.parse(JSON.stringify(project)) : null;
   } catch (error) {
     console.error(`Error fetching project slug ${slug}:`, error);
     return null;
@@ -88,7 +88,7 @@ export async function getProjectById(id: string) {
         caseStudy: true,
       },
     });
-    return project;
+    return project ? JSON.parse(JSON.stringify(project)) : null;
   } catch (error) {
     console.error(`Error fetching project by ID ${id}:`, error);
     return null;
@@ -157,7 +157,7 @@ export async function createProject(data: {
       },
     });
 
-    return { success: true, data: project };
+    return { success: true, data: JSON.parse(JSON.stringify(project)) };
   } catch (error: any) {
     console.error('Create project error:', error);
     return { success: false, error: error.message || 'Failed to create project.' };
@@ -251,7 +251,7 @@ export async function updateProject(
       });
     });
 
-    return { success: true, data: updated };
+    return { success: true, data: JSON.parse(JSON.stringify(updated)) };
   } catch (error: any) {
     console.error('Update project error:', error);
     return { success: false, error: error.message || 'Failed to update project.' };
