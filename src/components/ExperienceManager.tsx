@@ -179,37 +179,42 @@ export default function ExperienceManager({ experiences }: ExperienceManagerProp
     }
 
     startTransition(async () => {
-      let result;
-      const dataPayload = {
-        company,
-        position,
-        employmentType,
-        location: location || null,
-        startDate,
-        endDate: isCurrent ? null : endDate || null,
-        isCurrent,
-        description: description || null,
-        responsibilities,
-        technologies,
-        companyLogo,
-      };
+      try {
+        let result;
+        const dataPayload = {
+          company,
+          position,
+          employmentType,
+          location: location || null,
+          startDate,
+          endDate: isCurrent ? null : (endDate && endDate.trim() !== '' ? endDate : null),
+          isCurrent,
+          description: description || null,
+          responsibilities,
+          technologies,
+          companyLogo,
+        };
 
-      if (editingId) {
-        result = await updateExperience(editingId, dataPayload);
-      } else {
-        result = await createExperience(dataPayload);
-      }
+        if (editingId) {
+          result = await updateExperience(editingId, dataPayload);
+        } else {
+          result = await createExperience(dataPayload);
+        }
 
-      if (result.success) {
-        setToast({ 
-          type: 'success', 
-          text: editingId ? 'Experience successfully updated!' : 'Experience successfully created!' 
-        });
-        
-        setIsOpen(false);
-        router.refresh();
-      } else {
-        setToast({ type: 'error', text: result.error || 'Failed to save experience.' });
+        if (result?.success) {
+          setToast({ 
+            type: 'success', 
+            text: editingId ? 'Experience successfully updated!' : 'Experience successfully created!' 
+          });
+          
+          setIsOpen(false);
+          resetForm();
+          router.refresh();
+        } else {
+          setToast({ type: 'error', text: result?.error || 'Failed to save experience.' });
+        }
+      } catch (err: any) {
+        setToast({ type: 'error', text: err.message || 'Error occurred while saving experience.' });
       }
     });
   };

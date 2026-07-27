@@ -53,14 +53,22 @@ export async function createExperience(data: {
       displayOrder = lastExp ? lastExp.displayOrder + 1 : 0;
     }
 
+    // Validate and parse dates safely
+    const parsedStartDate = parseSafeDate(data.startDate);
+    if (!parsedStartDate) {
+      return { success: false, error: 'Please select a valid Start Date.' };
+    }
+
+    const parsedEndDate = data.isCurrent ? null : parseSafeDate(data.endDate);
+
     const experience = await prisma.experience.create({
       data: {
         company: data.company,
         position: data.position,
         employmentType: data.employmentType,
         location: data.location,
-        startDate: new Date(data.startDate),
-        endDate: data.endDate ? new Date(data.endDate) : null,
+        startDate: parsedStartDate,
+        endDate: parsedEndDate,
         isCurrent: data.isCurrent,
         description: data.description,
         responsibilities: data.responsibilities,
@@ -75,6 +83,15 @@ export async function createExperience(data: {
     console.error('Create experience error:', error);
     return { success: false, error: error.message || 'Failed to create experience.' };
   }
+}
+
+/**
+ * Helper to safely parse dates without throwing Invalid Date
+ */
+function parseSafeDate(dateStr?: string | null): Date | null {
+  if (!dateStr || dateStr.trim() === '') return null;
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? null : d;
 }
 
 /**
@@ -108,6 +125,13 @@ export async function updateExperience(
       return { success: false, error: 'Experience record not found.' };
     }
 
+    const parsedStartDate = parseSafeDate(data.startDate);
+    if (!parsedStartDate) {
+      return { success: false, error: 'Please select a valid Start Date.' };
+    }
+
+    const parsedEndDate = data.isCurrent ? null : parseSafeDate(data.endDate);
+
     const finalLogo =
       data.companyLogo !== undefined && data.companyLogo !== null && data.companyLogo !== ''
         ? data.companyLogo
@@ -120,8 +144,8 @@ export async function updateExperience(
         position: data.position,
         employmentType: data.employmentType,
         location: data.location,
-        startDate: new Date(data.startDate),
-        endDate: data.endDate ? new Date(data.endDate) : null,
+        startDate: parsedStartDate,
+        endDate: parsedEndDate,
         isCurrent: data.isCurrent,
         description: data.description,
         responsibilities: data.responsibilities,
