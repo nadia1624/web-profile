@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 
+import { useRouter } from 'next/navigation';
+
 interface ExperienceProps {
   id: string;
   company: string;
@@ -47,6 +49,7 @@ interface ExperienceManagerProps {
 }
 
 export default function ExperienceManager({ experiences }: ExperienceManagerProps) {
+  const router = useRouter();
   const [list, setList] = useState<ExperienceProps[]>(experiences);
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -203,8 +206,8 @@ export default function ExperienceManager({ experiences }: ExperienceManagerProp
           text: editingId ? 'Experience successfully updated!' : 'Experience successfully created!' 
         });
         
-        // Reload window to reflect changes
-        window.location.reload();
+        setIsOpen(false);
+        router.refresh();
       } else {
         setToast({ type: 'error', text: result.error || 'Failed to save experience.' });
       }

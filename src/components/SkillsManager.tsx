@@ -33,7 +33,10 @@ interface SkillsManagerProps {
   skills: SkillProps[];
 }
 
+import { useRouter } from 'next/navigation';
+
 export default function SkillsManager({ skills }: SkillsManagerProps) {
+  const router = useRouter();
   const [list, setList] = useState<SkillProps[]>(skills);
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -86,7 +89,8 @@ export default function SkillsManager({ skills }: SkillsManagerProps) {
           type: 'success', 
           text: editingId ? 'Skill successfully updated!' : 'Skill successfully created!' 
         });
-        window.location.reload();
+        setIsOpen(false);
+        router.refresh();
       } else {
         setToast({ type: 'error', text: result.error || 'Failed to save skill.' });
       }

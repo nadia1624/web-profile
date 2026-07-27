@@ -21,6 +21,7 @@ import {
   Upload
 } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface CertificationProps {
   id: string;
@@ -39,6 +40,7 @@ interface CertificationManagerProps {
 }
 
 export default function CertificationManager({ certifications }: CertificationManagerProps) {
+  const router = useRouter();
   const [list, setList] = useState<CertificationProps[]>(certifications);
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -148,7 +150,8 @@ export default function CertificationManager({ certifications }: CertificationMa
           type: 'success', 
           text: editingId ? 'Certification successfully updated!' : 'Certification successfully created!' 
         });
-        window.location.reload();
+        setIsOpen(false);
+        router.refresh();
       } else {
         setToast({ type: 'error', text: result.error || 'Failed to save certification.' });
       }

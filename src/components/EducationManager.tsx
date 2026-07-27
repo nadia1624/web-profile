@@ -22,6 +22,8 @@ import {
   Calendar
 } from 'lucide-react';
 
+import { useRouter } from 'next/navigation';
+
 interface EducationProps {
   id: string;
   institution: string;
@@ -40,6 +42,7 @@ interface EducationManagerProps {
 }
 
 export default function EducationManager({ educationList }: EducationManagerProps) {
+  const router = useRouter();
   const [list, setList] = useState<EducationProps[]>(educationList);
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -125,7 +128,8 @@ export default function EducationManager({ educationList }: EducationManagerProp
           type: 'success', 
           text: editingId ? 'Education successfully updated!' : 'Education successfully created!' 
         });
-        window.location.reload();
+        setIsOpen(false);
+        router.refresh();
       } else {
         setToast({ type: 'error', text: result.error || 'Failed to save education.' });
       }

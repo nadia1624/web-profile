@@ -29,7 +29,10 @@ interface TechnologiesManagerProps {
   technologies: TechProps[];
 }
 
+import { useRouter } from 'next/navigation';
+
 export default function TechnologiesManager({ technologies }: TechnologiesManagerProps) {
+  const router = useRouter();
   const [list, setList] = useState<TechProps[]>(technologies);
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -82,7 +85,8 @@ export default function TechnologiesManager({ technologies }: TechnologiesManage
           type: 'success', 
           text: editingId ? 'Technology successfully updated!' : 'Technology successfully created!' 
         });
-        window.location.reload();
+        setIsOpen(false);
+        router.refresh();
       } else {
         setToast({ type: 'error', text: result.error || 'Failed to save technology.' });
       }

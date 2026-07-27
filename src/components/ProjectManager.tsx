@@ -31,6 +31,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface TechProps {
   id: string;
@@ -85,6 +86,7 @@ interface ProjectManagerProps {
 }
 
 export default function ProjectManager({ projects, allTechnologies }: ProjectManagerProps) {
+  const router = useRouter();
   const [list, setList] = useState<ProjectProps[]>(projects);
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -367,8 +369,9 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
           text: editingId ? 'Project & Case Study successfully updated!' : 'Project & Case Study successfully created!' 
         });
 
-        // Trigger full page reload to fetch database content fresh
-        window.location.reload();
+        resetForm();
+        setView('list');
+        router.refresh();
       } else {
         setToast({ type: 'error', text: result.error || 'Failed to save project.' });
       }
