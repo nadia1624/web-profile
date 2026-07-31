@@ -354,21 +354,41 @@ export async function updateProject(
         .map((t: any) => (typeof t === 'string' ? t : t?.technologyId || t?.technology?.id || t?.id))
         .filter((techId): techId is string => typeof techId === 'string' && techId.trim() !== '');
 
+      const finalFullDescription =
+        data.fullDescription && data.fullDescription.trim() !== ''
+          ? data.fullDescription
+          : existing.fullDescription;
+
+      const finalRole =
+        data.role !== undefined && data.role !== null && data.role.trim() !== ''
+          ? data.role
+          : existing.role;
+
+      const finalLiveUrl =
+        data.liveUrl !== undefined && data.liveUrl !== null && data.liveUrl.trim() !== ''
+          ? data.liveUrl
+          : existing.liveUrl;
+
+      const finalGithubUrl =
+        data.githubUrl !== undefined && data.githubUrl !== null && data.githubUrl.trim() !== ''
+          ? data.githubUrl
+          : existing.githubUrl;
+
       // 2. Update project + recreate relations
       const proj = await tx.project.update({
         where: { id },
         data: {
-          title: data.title,
+          title: data.title || existing.title,
           slug: finalSlug,
-          shortDescription: data.shortDescription,
-          fullDescription: data.fullDescription,
-          category: data.category,
-          role: data.role,
+          shortDescription: data.shortDescription || existing.shortDescription,
+          fullDescription: finalFullDescription,
+          category: data.category || existing.category,
+          role: finalRole,
           thumbnail: finalThumbnail,
           projectImages: finalProjectImages,
-          liveUrl: data.liveUrl,
-          githubUrl: data.githubUrl,
-          featured: data.featured,
+          liveUrl: finalLiveUrl,
+          githubUrl: finalGithubUrl,
+          featured: data.featured !== undefined ? data.featured : existing.featured,
           technologies: {
             create: validTechIds.map((techId) => ({
               technologyId: techId,
@@ -380,6 +400,13 @@ export async function updateProject(
       // 3. Upsert Case Study if provided
       if (data.caseStudy) {
         const existingCs = await tx.caseStudy.findUnique({ where: { projectId: id } });
+
+        const getCsVal = (newVal: string | null | undefined, oldVal: string | null | undefined) => {
+          if (newVal !== undefined && newVal !== null && newVal.trim() !== '') {
+            return newVal;
+          }
+          return oldVal || null;
+        };
 
         const rawBpmn =
           data.caseStudy.bpmn !== undefined && data.caseStudy.bpmn !== null && data.caseStudy.bpmn !== ''
@@ -406,52 +433,35 @@ export async function updateProject(
         const finalDbDesign = await sanitizeImageUrl(rawDbDesign, 'portfolio/diagrams');
         const finalScreenshots = await sanitizeImageUrls(rawScreenshots, 'portfolio/screenshots');
 
+        const csPayload = {
+          overview: getCsVal(data.caseStudy.overview, existingCs?.overview),
+          background: getCsVal(data.caseStudy.background, existingCs?.background),
+          problem: getCsVal(data.caseStudy.problem, existingCs?.problem),
+          process: getCsVal(data.caseStudy.process, existingCs?.process),
+          analysis: getCsVal(data.caseStudy.analysis, existingCs?.analysis),
+          solution: getCsVal(data.caseStudy.solution, existingCs?.solution),
+          design: getCsVal(data.caseStudy.design, existingCs?.design),
+          development: getCsVal(data.caseStudy.development, existingCs?.development),
+          testing: getCsVal(data.caseStudy.testing, existingCs?.testing),
+          result: getCsVal(data.caseStudy.result, existingCs?.result),
+          businessProcess: getCsVal(data.caseStudy.businessProcess, existingCs?.businessProcess),
+          asIsProcess: getCsVal(data.caseStudy.asIsProcess, existingCs?.asIsProcess),
+          toBeProcess: getCsVal(data.caseStudy.toBeProcess, existingCs?.toBeProcess),
+          requirementsAnalysis: getCsVal(data.caseStudy.requirementsAnalysis, existingCs?.requirementsAnalysis),
+          bpmn: finalBpmn,
+          uml: finalUml,
+          uiUxDesign: getCsVal(data.caseStudy.uiUxDesign, existingCs?.uiUxDesign),
+          databaseDesign: finalDbDesign,
+          applicationScreenshots: finalScreenshots,
+          uat: getCsVal(data.caseStudy.uat, existingCs?.uat),
+        };
+
         await tx.caseStudy.upsert({
           where: { projectId: id },
-          update: {
-            overview: data.caseStudy.overview || null,
-            background: data.caseStudy.background || null,
-            problem: data.caseStudy.problem || null,
-            process: data.caseStudy.process || null,
-            analysis: data.caseStudy.analysis || null,
-            solution: data.caseStudy.solution || null,
-            design: data.caseStudy.design || null,
-            development: data.caseStudy.development || null,
-            testing: data.caseStudy.testing || null,
-            result: data.caseStudy.result || null,
-            businessProcess: data.caseStudy.businessProcess || null,
-            asIsProcess: data.caseStudy.asIsProcess || null,
-            toBeProcess: data.caseStudy.toBeProcess || null,
-            requirementsAnalysis: data.caseStudy.requirementsAnalysis || null,
-            bpmn: finalBpmn,
-            uml: finalUml,
-            uiUxDesign: data.caseStudy.uiUxDesign || null,
-            databaseDesign: finalDbDesign,
-            applicationScreenshots: finalScreenshots,
-            uat: data.caseStudy.uat || null,
-          },
+          update: csPayload,
           create: {
             projectId: id,
-            overview: data.caseStudy.overview || null,
-            background: data.caseStudy.background || null,
-            problem: data.caseStudy.problem || null,
-            process: data.caseStudy.process || null,
-            analysis: data.caseStudy.analysis || null,
-            solution: data.caseStudy.solution || null,
-            design: data.caseStudy.design || null,
-            development: data.caseStudy.development || null,
-            testing: data.caseStudy.testing || null,
-            result: data.caseStudy.result || null,
-            businessProcess: data.caseStudy.businessProcess || null,
-            asIsProcess: data.caseStudy.asIsProcess || null,
-            toBeProcess: data.caseStudy.toBeProcess || null,
-            requirementsAnalysis: data.caseStudy.requirementsAnalysis || null,
-            bpmn: finalBpmn,
-            uml: finalUml,
-            uiUxDesign: data.caseStudy.uiUxDesign || null,
-            databaseDesign: finalDbDesign,
-            applicationScreenshots: finalScreenshots,
-            uat: data.caseStudy.uat || null,
+            ...csPayload,
           },
         });
       }

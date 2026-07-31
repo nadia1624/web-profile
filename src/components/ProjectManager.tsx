@@ -6,7 +6,8 @@ import {
   updateProject, 
   deleteProject, 
   reorderProjects, 
-  toggleProjectFeatured 
+  toggleProjectFeatured,
+  getProjectById
 } from '@/actions/project';
 import { upsertCaseStudy } from '@/actions/case-study';
 import { 
@@ -95,6 +96,7 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
   // View state: 'list' | 'form'
   const [view, setView] = useState<'list' | 'form'>('list');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [loadingEditId, setLoadingEditId] = useState<string | null>(null);
 
   // Project fields state
   const [title, setTitle] = useState('');
@@ -192,53 +194,63 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
     setView('form');
   };
 
-  const handleOpenEdit = (project: ProjectProps) => {
-    setTitle(project.title);
-    setSlug(project.slug);
-    setShortDescription(project.shortDescription);
-    setFullDescription(project.fullDescription);
-    setCategory(project.category);
-    setRole(project.role || '');
-    setLiveUrl(project.liveUrl || '');
-    setGithubUrl(project.githubUrl || '');
-    setFeatured(project.featured);
-    setThumbnail(project.thumbnail || null);
-    
-    // Technologies relations
-    const tIds = (project.technologies || [])
-      .map((t: any) => (typeof t === 'string' ? t : t?.technologyId || t?.technology?.id || t?.id))
-      .filter((id): id is string => typeof id === 'string' && id.trim() !== '');
-    setSelectedTechs(tIds);
+  const handleOpenEdit = async (projectSummary: ProjectProps) => {
+    setLoadingEditId(projectSummary.id);
+    try {
+      const fullProject = await getProjectById(projectSummary.id);
+      const project = fullProject || projectSummary;
 
-    // Load Case study if existing
-    if (project.caseStudy) {
-      setCsOverview(project.caseStudy.overview || '');
-      setCsBackground(project.caseStudy.background || '');
-      setCsProblem(project.caseStudy.problem || '');
-      setCsProcess(project.caseStudy.process || '');
-      setCsAnalysis(project.caseStudy.analysis || '');
-      setCsSolution(project.caseStudy.solution || '');
-      setCsDesign(project.caseStudy.design || '');
-      setCsDevelopment(project.caseStudy.development || '');
-      setCsTesting(project.caseStudy.testing || '');
-      setCsResult(project.caseStudy.result || '');
-      setCsBusinessProcess(project.caseStudy.businessProcess || '');
-      setCsAsIsProcess(project.caseStudy.asIsProcess || '');
-      setCsToBeProcess(project.caseStudy.toBeProcess || '');
-      setCsRequirementsAnalysis(project.caseStudy.requirementsAnalysis || '');
-      setCsUat(project.caseStudy.uat || '');
-      setCsBpmn(project.caseStudy.bpmn || null);
-      setCsUml(project.caseStudy.uml || null);
-      setCsDatabaseDesign(project.caseStudy.databaseDesign || null);
-      setCsUiUxDesign(project.caseStudy.uiUxDesign || '');
-      setCsScreenshots(project.caseStudy.applicationScreenshots || []);
-      setShowCaseStudy(true);
-    } else {
-      setShowCaseStudy(false);
+      setTitle(project.title || '');
+      setSlug(project.slug || '');
+      setShortDescription(project.shortDescription || '');
+      setFullDescription(project.fullDescription || '');
+      setCategory(project.category || '');
+      setRole(project.role || '');
+      setLiveUrl(project.liveUrl || '');
+      setGithubUrl(project.githubUrl || '');
+      setFeatured(!!project.featured);
+      setThumbnail(project.thumbnail || null);
+      
+      // Technologies relations
+      const tIds = (project.technologies || [])
+        .map((t: any) => (typeof t === 'string' ? t : t?.technologyId || t?.technology?.id || t?.id))
+        .filter((id: any): id is string => typeof id === 'string' && id.trim() !== '');
+      setSelectedTechs(tIds);
+
+      // Load Case study if existing
+      if (project.caseStudy) {
+        setCsOverview(project.caseStudy.overview || '');
+        setCsBackground(project.caseStudy.background || '');
+        setCsProblem(project.caseStudy.problem || '');
+        setCsProcess(project.caseStudy.process || '');
+        setCsAnalysis(project.caseStudy.analysis || '');
+        setCsSolution(project.caseStudy.solution || '');
+        setCsDesign(project.caseStudy.design || '');
+        setCsDevelopment(project.caseStudy.development || '');
+        setCsTesting(project.caseStudy.testing || '');
+        setCsResult(project.caseStudy.result || '');
+        setCsBusinessProcess(project.caseStudy.businessProcess || '');
+        setCsAsIsProcess(project.caseStudy.asIsProcess || '');
+        setCsToBeProcess(project.caseStudy.toBeProcess || '');
+        setCsRequirementsAnalysis(project.caseStudy.requirementsAnalysis || '');
+        setCsUat(project.caseStudy.uat || '');
+        setCsBpmn(project.caseStudy.bpmn || null);
+        setCsUml(project.caseStudy.uml || null);
+        setCsDatabaseDesign(project.caseStudy.databaseDesign || null);
+        setCsUiUxDesign(project.caseStudy.uiUxDesign || '');
+        setCsScreenshots(project.caseStudy.applicationScreenshots || []);
+        setShowCaseStudy(true);
+      } else {
+        setShowCaseStudy(false);
+      }
+
+      setEditingId(project.id);
+      setView('form');
+    } catch (err) {
+      console.error('Failed to load full project details:', err);
+    } finally {
+      setLoadingEditId(null);
     }
-
-    setEditingId(project.id);
-    setView('form');
   };
 
   // Upload helpers
@@ -1051,10 +1063,15 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
                     {/* Edit & Delete */}
                     <button
                       onClick={() => handleOpenEdit(proj)}
-                      className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-850 text-zinc-400 hover:text-purple-400 hover:border-purple-500/25 transition-colors cursor-pointer"
+                      disabled={loadingEditId === proj.id}
+                      className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-850 text-zinc-400 hover:text-purple-400 hover:border-purple-500/25 transition-colors cursor-pointer disabled:opacity-50"
                       title="Edit"
                     >
-                      <Edit2 className="w-4 h-4" />
+                      {loadingEditId === proj.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                      ) : (
+                        <Edit2 className="w-4 h-4" />
+                      )}
                     </button>
                     <button
                       onClick={() => handleDelete(proj.id, proj.title)}

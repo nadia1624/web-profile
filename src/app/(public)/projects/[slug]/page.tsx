@@ -205,7 +205,6 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               <h2 className="text-2xl sm:text-3xl font-bold font-heading text-foreground mt-1">
                 Systems & Requirements Analysis
               </h2>
-              <p className="text-xs text-muted-foreground mt-1">A detailed examination of problem, requirements, modeling and outcomes.</p>
             </ScrollReveal>
 
             {/* Overview / Background / Problem */}
