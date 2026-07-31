@@ -1,34 +1,33 @@
 /**
  * Cloudinary configuration and upload utility.
  * Used as cloud storage to avoid EROFS on serverless (Vercel).
+ * Uses dynamic import('cloudinary') to prevent Next.js / Turbopack bundle hoisting issues.
  */
 
-// Clean up invalid or empty CLOUDINARY_URL from process.env BEFORE importing the SDK
-// so Cloudinary's internal module initializer won't throw "Invalid CLOUDINARY_URL protocol".
-if (
-  process.env.CLOUDINARY_URL !== undefined &&
-  (!process.env.CLOUDINARY_URL || !process.env.CLOUDINARY_URL.trim().startsWith('cloudinary://'))
-) {
-  delete process.env.CLOUDINARY_URL;
-}
-
-import { v2 as cloudinary } from 'cloudinary';
-
-// Check if Cloudinary environment variable is properly formatted
+/**
+ * Check if Cloudinary environment variable is properly formatted with cloudinary://
+ */
 export function isCloudinaryConfigured(): boolean {
   const envUrl = process.env.CLOUDINARY_URL;
   return typeof envUrl === 'string' && envUrl.trim().startsWith('cloudinary://');
 }
 
-if (isCloudinaryConfigured()) {
+/**
+ * Dynamically import and configure Cloudinary SDK only when valid config exists.
+ */
+async function getCloudinary() {
+  if (!isCloudinaryConfigured()) {
+    return null;
+  }
   try {
+    const { v2: cloudinary } = await import('cloudinary');
     cloudinary.config({ secure: true });
+    return cloudinary;
   } catch (err) {
-    console.warn('Cloudinary config error:', err);
+    console.warn('Failed to initialize Cloudinary SDK:', err);
+    return null;
   }
 }
-
-export { cloudinary };
 
 /**
  * Upload a buffer to Cloudinary and return the secure URL.
@@ -41,7 +40,8 @@ export async function uploadToCloudinary(
   folder: string = 'portfolio',
   mimeType: string = 'image/webp'
 ): Promise<string> {
-  if (!isCloudinaryConfigured()) {
+  const cloudinary = await getCloudinary();
+  if (!cloudinary) {
     throw new Error('CLOUDINARY_URL environment variable is not configured with a valid cloudinary:// URL.');
   }
 
@@ -98,14 +98,17 @@ export async function sanitizeImageUrl(
   if (trimmed.startsWith('data:')) {
     // 1. If Cloudinary is configured, upload the Base64 Data URL directly to Cloudinary
     if (isCloudinaryConfigured()) {
-      try {
-        const res = await cloudinary.uploader.upload(trimmed, {
-          folder,
-          transformation: [{ quality: 'auto:good' }, { fetch_format: 'webp' }],
-        });
-        return res.secure_url;
-      } catch (err) {
-        console.warn('Cloudinary upload of Base64 Data URL failed:', err);
+      const cloudinary = await getCloudinary();
+      if (cloudinary) {
+        try {
+          const res = await cloudinary.uploader.upload(trimmed, {
+            folder,
+            transformation: [{ quality: 'auto:good' }, { fetch_format: 'webp' }],
+          });
+          return res.secure_url;
+        } catch (err) {
+          console.warn('Cloudinary upload of Base64 Data URL failed:', err);
+        }
       }
     }
 
