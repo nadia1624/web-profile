@@ -3,6 +3,8 @@
 import { prisma } from '@/lib/prisma';
 import { getCurrentAdmin } from './auth';
 
+import { cache } from 'react';
+
 // ==========================================
 // SKILLS CRUD ACTIONS
 // ==========================================
@@ -10,7 +12,7 @@ import { getCurrentAdmin } from './auth';
 /**
  * Fetch all skill entries ordered by displayOrder (ascending)
  */
-export async function getSkills() {
+export const getSkills = cache(async () => {
   try {
     const skills = await prisma.skill.findMany({
       orderBy: { displayOrder: 'asc' },
@@ -20,7 +22,7 @@ export async function getSkills() {
     console.error('Error fetching skills:', error);
     return [];
   }
-}
+});
 
 /**
  * Create a new skill
@@ -142,7 +144,7 @@ export async function reorderSkills(orderedIds: string[]) {
 /**
  * Fetch all technology records
  */
-export async function getTechnologies() {
+export const getTechnologies = cache(async () => {
   try {
     const techs = await prisma.technology.findMany({
       orderBy: { name: 'asc' },
@@ -152,7 +154,7 @@ export async function getTechnologies() {
     console.error('Error fetching technologies:', error);
     return [];
   }
-}
+});
 
 /**
  * Create a new technology

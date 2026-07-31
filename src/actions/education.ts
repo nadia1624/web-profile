@@ -3,10 +3,12 @@
 import { prisma } from '@/lib/prisma';
 import { getCurrentAdmin } from './auth';
 
+import { cache } from 'react';
+
 /**
  * Fetch all education entries ordered by displayOrder (ascending)
  */
-export async function getEducationList() {
+export const getEducationList = cache(async () => {
   try {
     const list = await prisma.education.findMany({
       orderBy: [
@@ -19,7 +21,7 @@ export async function getEducationList() {
     console.error('Error fetching education list:', error);
     return [];
   }
-}
+});
 
 /**
  * Create a new education entry

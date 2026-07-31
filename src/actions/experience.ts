@@ -3,10 +3,12 @@
 import { prisma } from '@/lib/prisma';
 import { getCurrentAdmin } from './auth';
 
+import { cache } from 'react';
+
 /**
  * Fetch all experience records ordered by displayOrder (ascending)
  */
-export async function getExperiences() {
+export const getExperiences = cache(async () => {
   try {
     const experiences = await prisma.experience.findMany({
       orderBy: [
@@ -19,7 +21,7 @@ export async function getExperiences() {
     console.error('Error fetching experiences:', error);
     return [];
   }
-}
+});
 
 /**
  * Create a new experience record

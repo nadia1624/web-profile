@@ -19,15 +19,27 @@ function slugify(text: string): string {
     .replace(/-+$/, ''); // Trim - from end
 }
 
+import { cache } from 'react';
+
 /**
- * Fetch all project records with their technologies and case study reference
+ * Fetch all project records with lean summary fields for fast listing page loading
  */
-export async function getProjects() {
+export const getProjects = cache(async () => {
   try {
     const projects = await prisma.project.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        shortDescription: true,
+        category: true,
+        role: true,
+        thumbnail: true,
+        featured: true,
+        displayOrder: true,
+        createdAt: true,
         technologies: {
-          include: {
+          select: {
             technology: true,
           },
         },
@@ -47,12 +59,49 @@ export async function getProjects() {
     console.error('Error fetching projects:', error);
     return [];
   }
-}
+});
 
 /**
- * Fetch a single project by its slug
+ * Fetch featured projects directly with database limit for fast homepage loading
  */
-export async function getProjectBySlug(slug: string) {
+export const getFeaturedProjects = cache(async (limit = 3) => {
+  try {
+    const projects = await prisma.project.findMany({
+      where: { featured: true },
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        shortDescription: true,
+        category: true,
+        role: true,
+        thumbnail: true,
+        featured: true,
+        displayOrder: true,
+        createdAt: true,
+        technologies: {
+          select: {
+            technology: true,
+          },
+        },
+      },
+      orderBy: [
+        { displayOrder: 'asc' },
+        { createdAt: 'desc' }
+      ],
+    });
+    return JSON.parse(JSON.stringify(projects));
+  } catch (error) {
+    console.error('Error fetching featured projects:', error);
+    return [];
+  }
+});
+
+/**
+ * Fetch a single project by its slug (Full details including full description & case study)
+ */
+export const getProjectBySlug = cache(async (slug: string) => {
   try {
     const project = await prisma.project.findUnique({
       where: { slug },
@@ -70,12 +119,12 @@ export async function getProjectBySlug(slug: string) {
     console.error(`Error fetching project slug ${slug}:`, error);
     return null;
   }
-}
+});
 
 /**
  * Fetch a single project by its ID
  */
-export async function getProjectById(id: string) {
+export const getProjectById = cache(async (id: string) => {
   try {
     const project = await prisma.project.findUnique({
       where: { id },
@@ -93,7 +142,7 @@ export async function getProjectById(id: string) {
     console.error(`Error fetching project by ID ${id}:`, error);
     return null;
   }
-}
+});
 
 export interface CaseStudyInput {
   overview?: string | null;

@@ -3,10 +3,12 @@
 import { prisma } from '@/lib/prisma';
 import { getCurrentAdmin } from './auth';
 
+import { cache } from 'react';
+
 /**
  * Fetch all certifications ordered by issueDate (descending)
  */
-export async function getCertifications() {
+export const getCertifications = cache(async () => {
   try {
     const certs = await prisma.certification.findMany({
       orderBy: { issueDate: 'desc' },
@@ -16,7 +18,7 @@ export async function getCertifications() {
     console.error('Error fetching certifications:', error);
     return [];
   }
-}
+});
 
 /**
  * Create a new certification entry

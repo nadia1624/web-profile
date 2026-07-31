@@ -3,10 +3,12 @@
 import { prisma } from '@/lib/prisma';
 import { getCurrentAdmin } from './auth';
 
+import { cache } from 'react';
+
 /**
  * Fetch the profile record. If none exists, return null.
  */
-export async function getProfile() {
+export const getProfile = cache(async () => {
   try {
     const profile = await prisma.profile.findFirst();
     return profile ? JSON.parse(JSON.stringify(profile)) : null;
@@ -14,7 +16,7 @@ export async function getProfile() {
     console.error('Error fetching profile:', error);
     return null;
   }
-}
+});
 
 /**
  * Create or update the single profile record in the database.

@@ -3,10 +3,12 @@
 import { prisma } from '@/lib/prisma';
 import { getCurrentAdmin } from './auth';
 
+import { cache } from 'react';
+
 /**
  * Fetch case study by associated project ID
  */
-export async function getCaseStudyByProjectId(projectId: string) {
+export const getCaseStudyByProjectId = cache(async (projectId: string) => {
   try {
     const caseStudy = await prisma.caseStudy.findUnique({
       where: { projectId },
@@ -16,7 +18,7 @@ export async function getCaseStudyByProjectId(projectId: string) {
     console.error('Error fetching case study:', error);
     return null;
   }
-}
+});
 
 /**
  * Create or update a case study record for a project

@@ -1,7 +1,7 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import Image from 'next/image';
 import { getProfile } from '@/actions/profile';
-import { getProjects } from '@/actions/project';
+import { getFeaturedProjects } from '@/actions/project';
 import TypingText from '@/components/TypingText';
 import { FadeIn, FadeInLeft, FadeInRight, StaggerContainer, StaggerItem, HoverScale, ScrollReveal } from '@/components/MotionWrappers';
 import SkillsSection from '@/components/SkillsSection';
@@ -13,8 +13,7 @@ export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 export default async function HomePage() {
   const profile = await getProfile();
-  const projects = await getProjects();
-  const featuredProjects = projects.filter((p: any) => p.featured).slice(0, 3);
+  const featuredProjects = await getFeaturedProjects(3);
 
   const name = profile?.name || 'Nadia Deari Hanifah';
   const headline = profile?.headline || 'Information Systems Graduate & IT System Analyst';
