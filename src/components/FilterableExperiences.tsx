@@ -64,10 +64,11 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
           return (
             <StaggerItem key={exp.id}>
               <div className="glass-panel glass-panel-hover p-4 sm:p-7 rounded-2xl border border-border transition-all duration-300 hover:border-purple-500/40 relative overflow-hidden group">
-                {/* Header Row: Logo, Role, Company, and Category Badges */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-border/60 pb-4 sm:pb-5">
-                  <div className="flex items-center sm:items-start gap-3 sm:gap-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-secondary border border-border overflow-hidden shrink-0 flex items-center justify-center text-purple-500 shadow-sm">
+                {/* Mobile & Desktop Flexible Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
+                  {/* Top Mobile Row: Logo + Position + Date Badge */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-secondary border border-border overflow-hidden shrink-0 flex items-center justify-center text-purple-500 shadow-sm mt-0.5">
                       {exp.companyLogo ? (
                         <Image
                           src={exp.companyLogo}
@@ -84,19 +85,19 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-sm sm:text-lg font-bold font-heading text-foreground group-hover:text-purple-500 transition-colors leading-snug">
+                      <h3 className="text-sm sm:text-lg font-bold font-heading text-foreground group-hover:text-purple-500 transition-colors leading-snug break-words">
                         {exp.position}
                       </h3>
-                      <p className="text-xs sm:text-sm text-purple-500 light:text-purple-700 font-semibold mt-0.5 truncate">
+                      <p className="text-xs sm:text-sm text-purple-500 light:text-purple-700 font-semibold mt-0.5 break-words">
                         {exp.company}
                       </p>
                     </div>
                   </div>
 
-                  {/* Date & Employment Type Badges */}
-                  <div className="flex flex-wrap items-center gap-2 sm:flex-col sm:items-end">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-secondary text-foreground text-[11px] sm:text-xs font-medium border border-border">
-                      <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-500 shrink-0" />
+                  {/* Badges: Date & Location */}
+                  <div className="flex flex-wrap items-center gap-2 sm:flex-col sm:items-end shrink-0 pl-13 sm:pl-0">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-secondary text-foreground text-[10px] sm:text-xs font-medium border border-border">
+                      <Calendar className="w-3 h-3 text-purple-500 shrink-0" />
                       <span className="whitespace-nowrap">
                         {new Date(exp.startDate).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -123,34 +124,34 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
 
                 {/* Description */}
                 {exp.description && (
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-4 leading-relaxed italic border-l-2 border-purple-500/40 pl-3">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-3 leading-relaxed italic border-l-2 border-purple-500/40 pl-3">
                     {exp.description}
                   </p>
                 )}
 
-                {/* Key Responsibilities & Achievements */}
+                {/* Key Responsibilities */}
                 {exp.responsibilities && exp.responsibilities.length > 0 && (
-                  <div className="mt-4 sm:mt-5">
+                  <div className="mt-4">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
                       Key Responsibilities & Contributions
                     </p>
-                    <ul className="space-y-1.5 sm:space-y-2">
+                    <ul className="space-y-2">
                       {exp.responsibilities.map((resp: string, rIdx: number) => (
                         <li
                           key={rIdx}
                           className="flex items-start gap-2 text-xs sm:text-sm text-foreground leading-relaxed"
                         >
                           <ChevronRight className="w-3.5 h-3.5 text-purple-500 mt-0.5 shrink-0" />
-                          <span>{resp}</span>
+                          <span className="break-words">{resp}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
 
-                {/* Technologies / Skills Used */}
+                {/* Skills Badges */}
                 {exp.technologies && exp.technologies.length > 0 && (
-                  <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-border/60 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <div className="mt-4 pt-3 border-t border-border/60 flex flex-wrap items-center gap-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1 flex items-center gap-1">
                       <Layers className="w-3 h-3 text-purple-500" />
                       Skills:
@@ -158,7 +159,7 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
                     {exp.technologies.map((tech: string) => (
                       <span
                         key={tech}
-                        className="tech-tag text-[10px] sm:text-xs font-medium bg-secondary text-foreground border border-border px-2 sm:px-2.5 py-0.5 rounded-md sm:rounded-lg hover:border-purple-500/30 transition-colors"
+                        className="tech-tag text-[10px] sm:text-xs font-medium bg-secondary text-foreground border border-border px-2 py-0.5 rounded-md hover:border-purple-500/30 transition-colors"
                       >
                         {tech}
                       </span>
@@ -174,35 +175,35 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
   };
 
   return (
-    <div className="w-full space-y-6 sm:space-y-8 max-w-4xl mx-auto px-1 sm:px-0">
-      {/* Exactly 2 Filter Tabs (Work & Internship vs Organization) */}
-      <div className="flex flex-row items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-10 w-full">
+    <div className="w-full space-y-6 max-w-4xl mx-auto px-0 sm:px-2">
+      {/* Segmented Filter Control Bar for Mobile & Desktop */}
+      <div className="grid grid-cols-2 p-1 rounded-2xl bg-secondary/80 border border-border max-w-md mx-auto mb-6 sm:mb-8">
         <button
           onClick={() => setActiveTab('work')}
-          className={`flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 ${
+          className={`py-2.5 px-3 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             activeTab === 'work'
-              ? 'bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-900/30 light:shadow-purple-400/20'
-              : 'bg-secondary text-muted-foreground border-border hover:text-foreground hover:border-purple-500/40'
+              ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30 font-bold'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+          <Building2 className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">Work & Internship</span>
-          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] bg-black/20 text-white font-mono">
+          <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-black/20 text-white font-mono">
             {workExperiences.length}
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab('organization')}
-          className={`flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 ${
+          className={`py-2.5 px-3 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             activeTab === 'organization'
-              ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-900/30 light:shadow-indigo-400/20'
-              : 'bg-secondary text-muted-foreground border-border hover:text-foreground hover:border-indigo-500/40'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/30 font-bold'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+          <Users className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">Organization</span>
-          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] bg-black/20 text-white font-mono">
+          <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-black/20 text-white font-mono">
             {orgExperiences.length}
           </span>
         </button>
@@ -212,9 +213,9 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
+          exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2 }}
         >
           {renderExperienceList(filteredExperiences)}

@@ -99,7 +99,7 @@ export default function CertificationsSection({ certifications }: Certifications
                     
                     {/* Hover/Tap Lightbox Overlay */}
                     <div className="absolute inset-0 bg-black/50 sm:opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 backdrop-blur-xs">
-                      <span className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-purple-600/90 text-white text-[11px] sm:text-xs font-semibold shadow-lg flex items-center gap-1.5">
+                      <span className="px-3 py-1.5 rounded-xl bg-purple-600/90 text-white text-xs font-semibold shadow-lg flex items-center gap-1.5">
                         <ZoomIn className="w-3.5 h-3.5" />
                         Preview Image
                       </span>
@@ -107,7 +107,7 @@ export default function CertificationsSection({ certifications }: Certifications
 
                     {/* Badge */}
                     <span
-                      className={`absolute top-2.5 left-2.5 z-10 text-[8px] sm:text-[9px] uppercase font-bold tracking-wider px-2 sm:px-2.5 py-0.5 rounded-full border backdrop-blur-md shadow-sm ${
+                      className={`absolute top-2.5 left-2.5 z-10 text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border backdrop-blur-md shadow-sm ${
                         itemIsTraining
                           ? 'bg-blue-950/80 light:bg-blue-50/90 text-blue-400 light:text-blue-700 border-blue-500/30'
                           : 'bg-purple-950/80 light:bg-purple-50/90 text-purple-400 light:text-purple-700 border-purple-500/30'
@@ -119,7 +119,7 @@ export default function CertificationsSection({ certifications }: Certifications
                 ) : (
                   <div className="p-3.5 sm:p-4 border-b border-border bg-secondary/50 flex items-center justify-between">
                     <span
-                      className={`text-[8px] sm:text-[9px] uppercase font-bold tracking-wider px-2 sm:px-2.5 py-0.5 rounded-full border ${
+                      className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border ${
                         itemIsTraining
                           ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
                           : 'bg-purple-500/10 text-purple-500 border-purple-500/20'
@@ -132,13 +132,11 @@ export default function CertificationsSection({ certifications }: Certifications
 
                 {/* Card Content */}
                 <div className="p-4 sm:p-6">
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-sm sm:text-base font-bold font-heading text-foreground group-hover:text-purple-500 transition-colors leading-snug">
-                      {item.name}
-                    </h3>
-                  </div>
+                  <h3 className="text-sm sm:text-base font-bold font-heading text-foreground group-hover:text-purple-500 transition-colors leading-snug break-words">
+                    {item.name}
+                  </h3>
 
-                  <p className="text-xs text-purple-500 light:text-purple-700 font-semibold mt-1">
+                  <p className="text-xs text-purple-500 light:text-purple-700 font-semibold mt-1 break-words">
                     {item.issuingOrganization}
                   </p>
 
@@ -153,7 +151,7 @@ export default function CertificationsSection({ certifications }: Certifications
                   </div>
 
                   {item.description && (
-                    <p className="text-xs text-muted-foreground mt-2.5 sm:mt-3 leading-relaxed line-clamp-3">
+                    <p className="text-xs text-muted-foreground mt-2.5 leading-relaxed line-clamp-3">
                       {item.description}
                     </p>
                   )}
@@ -208,10 +206,10 @@ export default function CertificationsSection({ certifications }: Certifications
   };
 
   return (
-    <div className="w-full space-y-8 sm:space-y-12">
+    <div className="w-full space-y-6 sm:space-y-10">
       {/* Section Header */}
       <ScrollReveal>
-        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-10 px-2">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
           <span className="text-xs uppercase tracking-wider font-semibold text-purple-500">
             Qualifications & Continuous Learning
           </span>
@@ -224,34 +222,34 @@ export default function CertificationsSection({ certifications }: Certifications
         </div>
       </ScrollReveal>
 
-      {/* 2 Filter Tabs Only */}
-      <div className="flex flex-row items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-10 w-full px-1">
+      {/* Segmented Filter Control Bar */}
+      <div className="grid grid-cols-2 p-1 rounded-2xl bg-secondary/80 border border-border max-w-md mx-auto mb-6 sm:mb-8">
         <button
           onClick={() => setActiveTab('certification')}
-          className={`flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 ${
+          className={`py-2.5 px-3 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             activeTab === 'certification'
-              ? 'bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-900/30 light:shadow-purple-400/20'
-              : 'bg-secondary text-muted-foreground border-border hover:text-foreground hover:border-purple-500/40'
+              ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30 font-bold'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+          <Award className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">Certifications</span>
-          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] bg-black/20 text-white font-mono">
+          <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-black/20 text-white font-mono">
             {certList.length}
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab('training')}
-          className={`flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 ${
+          className={`py-2.5 px-3 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
             activeTab === 'training'
-              ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-900/30 light:shadow-blue-400/20'
-              : 'bg-secondary text-muted-foreground border-border hover:text-foreground hover:border-blue-500/40'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-900/30 font-bold'
+              : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+          <GraduationCap className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">Trainings & Workshops</span>
-          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] bg-black/20 text-white font-mono">
+          <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-black/20 text-white font-mono">
             {trainingList.length}
           </span>
         </button>
@@ -261,9 +259,9 @@ export default function CertificationsSection({ certifications }: Certifications
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
+          exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2 }}
         >
           {renderCardGrid(filteredItems)}

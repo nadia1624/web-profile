@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { sendContactMessage } from '@/actions/contact';
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
@@ -27,25 +28,39 @@ export default function ContactForm() {
       setErrorMessage('Please fill in all required fields.');
       return;
     }
+
     setStatus('loading');
     try {
-      // 1. Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      // 1. Call Server Action to save message directly to Database
+      const res = await sendContactMessage({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      });
 
-      // 2. Direct mailto launch to target email address: nadyadearihanifah@gmail.com
-      const mailtoUrl = `mailto:nadyadearihanifah@gmail.com?subject=${encodeURIComponent(
+      if (!res.success) {
+        throw new Error(res.error || 'Gagal mengirim pesan.');
+      }
+
+      // 2. Open mailto trigger as fallback to launch email client to target email
+      const mailtoUrl = `mailto:nadiadearihanifah@gmail.com?subject=${encodeURIComponent(
         formData.subject || `Portfolio Message from ${formData.name}`
       )}&body=${encodeURIComponent(
         `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
       )}`;
 
-      window.location.href = mailtoUrl;
+      try {
+        window.location.href = mailtoUrl;
+      } catch {
+        // Ignore if pop-up blocked
+      }
 
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
-    } catch {
+    } catch (err: any) {
       setStatus('error');
-      setErrorMessage('Failed to send message. Please try again.');
+      setErrorMessage(err.message || 'Failed to send message. Please try again.');
     }
   };
 
@@ -59,9 +74,9 @@ export default function ContactForm() {
         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500/10 border border-emerald-500/35 text-emerald-500 flex items-center justify-center mb-6 animate-bounce">
           <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8" />
         </div>
-        <h3 className="text-lg sm:text-xl font-bold font-heading text-foreground">Message Ready to Send!</h3>
+        <h3 className="text-lg sm:text-xl font-bold font-heading text-foreground">Message Sent & Saved!</h3>
         <p className="text-muted-foreground text-xs sm:text-sm mt-3 max-w-sm leading-relaxed">
-          Pesan Anda telah disiapkan dan diarahkan langsung ke email <strong className="text-purple-500">nadyadearihanifah@gmail.com</strong>.
+          Terima kasih! Pesan Anda telah **tersimpan aman di Database** dan diteruskan ke email <strong className="text-purple-500">nadiadearihanifah@gmail.com</strong>.
         </p>
         <button
           onClick={() => setStatus('idle')}
@@ -163,7 +178,7 @@ export default function ContactForm() {
         {status === 'loading' ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            Preparing Message...
+            Sending & Saving Message...
           </>
         ) : (
           <>
