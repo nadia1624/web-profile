@@ -63,29 +63,40 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // 6. Save File to Server Disk (public/uploads)
-    const sanitizedOriginalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const filename = `${Date.now()}_${sanitizedOriginalName}`;
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
+    // 6. Try saving to local disk (/public/uploads)
+    try {
+      const sanitizedOriginalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const filename = `${Date.now()}_${sanitizedOriginalName}`;
+      const uploadDir = join(process.cwd(), 'public', 'uploads');
 
-    // Create public/uploads directory if it doesn't exist
-    await mkdir(uploadDir, { recursive: true });
-    
-    const filePath = join(uploadDir, filename);
-    await writeFile(filePath, buffer);
+      await mkdir(uploadDir, { recursive: true });
+      const filePath = join(uploadDir, filename);
+      await writeFile(filePath, buffer);
 
-    const relativeUrl = `/uploads/${filename}`;
+      return NextResponse.json({
+        success: true,
+        url: `/uploads/${filename}`,
+        filename: file.name,
+        size: file.size,
+      });
+    } catch (fsError: any) {
+      // 7. Fallback for Vercel / Read-Only Serverless File Systems (EROFS)
+      // Convert tiny compressed WebP buffer into a high-compatibility Data URL
+      const mimeType = file.type || 'image/webp';
+      const base64 = buffer.toString('base64');
+      const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    return NextResponse.json({
-      success: true,
-      url: relativeUrl,
-      filename: file.name,
-      size: file.size,
-    });
+      return NextResponse.json({
+        success: true,
+        url: dataUrl,
+        filename: file.name,
+        size: file.size,
+      });
+    }
   } catch (error: any) {
     console.error('Image upload endpoint error:', error);
     return NextResponse.json(
-      { error: error.message || 'Gagal menyimpan file di server.' },
+      { error: error.message || 'Gagal mengunggah file gambar.' },
       { status: 500 }
     );
   }
