@@ -31,7 +31,7 @@ export default function ContactForm() {
 
     setStatus('loading');
     try {
-      // 1. Call Server Action to save message directly to Database
+      // Call Server Action to save message directly to Database (100% silent & instant)
       const res = await sendContactMessage({
         name: formData.name,
         email: formData.email,
@@ -41,19 +41,6 @@ export default function ContactForm() {
 
       if (!res.success) {
         throw new Error(res.error || 'Gagal mengirim pesan.');
-      }
-
-      // 2. Open mailto trigger as fallback to launch email client to target email
-      const mailtoUrl = `mailto:nadyadearihanifah@gmail.com?subject=${encodeURIComponent(
-        formData.subject || `Portfolio Message from ${formData.name}`
-      )}&body=${encodeURIComponent(
-        `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
-      )}`;
-
-      try {
-        window.location.href = mailtoUrl;
-      } catch {
-        // Ignore if pop-up blocked
       }
 
       setStatus('success');
@@ -74,9 +61,9 @@ export default function ContactForm() {
         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500/10 border border-emerald-500/35 text-emerald-500 flex items-center justify-center mb-6 animate-bounce">
           <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8" />
         </div>
-        <h3 className="text-lg sm:text-xl font-bold font-heading text-foreground">Message Sent & Saved!</h3>
+        <h3 className="text-lg sm:text-xl font-bold font-heading text-foreground">Message Sent Successfully!</h3>
         <p className="text-muted-foreground text-xs sm:text-sm mt-3 max-w-sm leading-relaxed">
-          Terima kasih! Pesan Anda telah **tersimpan aman di Database** dan diteruskan ke email <strong className="text-purple-500">nadyadearihanifah@gmail.com</strong>.
+          Terima kasih! Pesan Anda telah **tersimpan aman**. Anda dapat melihat dan membaca pesan ini langsung di Admin Panel.
         </p>
         <button
           onClick={() => setStatus('idle')}
@@ -178,7 +165,7 @@ export default function ContactForm() {
         {status === 'loading' ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            Sending & Saving Message...
+            Sending Message...
           </>
         ) : (
           <>
