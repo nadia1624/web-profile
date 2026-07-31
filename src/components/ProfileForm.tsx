@@ -5,6 +5,7 @@ import { updateProfile } from '@/actions/profile';
 import { Upload, Loader2, Save, AlertCircle, CheckCircle, Image as ImageIcon, FileText, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { uploadImageFile } from '@/lib/upload-helper';
+import { uploadDocumentFile } from '@/lib/document-upload-helper';
 
 interface ProfileProps {
   id: string;
@@ -87,7 +88,7 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
     setUploadError(null);
 
     try {
-      const url = await uploadImageFile(file);
+      const url = await uploadDocumentFile(file);
       setCvUrl(url);
       setMessage({ type: 'success', text: 'File CV berhasil diunggah!' });
     } catch (err: any) {

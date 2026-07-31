@@ -3,7 +3,8 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { verifyJWT } from '@/lib/auth';
 
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB for images
+const MAX_DOC_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB for documents (PDF/DOC)
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -37,11 +38,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Tidak ada file yang diunggah.' }, { status: 400 });
     }
 
-    // 3. Backend Size Validation (Max 5MB)
-    if (file.size > MAX_SIZE_BYTES) {
+    // 3. Backend Size Validation
+    const isDocument = file.type === 'application/pdf' ||
+      file.type === 'application/msword' ||
+      file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.name.toLowerCase().endsWith('.pdf') ||
+      file.name.toLowerCase().endsWith('.doc') ||
+      file.name.toLowerCase().endsWith('.docx');
+    const maxSize = isDocument ? MAX_DOC_SIZE_BYTES : MAX_IMAGE_SIZE_BYTES;
+    if (file.size > maxSize) {
       const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+      const limit = isDocument ? '10 MB' : '5 MB';
       return NextResponse.json(
-        { error: `Ukuran file terlalu besar (${sizeInMB} MB). Maksimal ukuran file adalah 5 MB.` },
+        { error: `Ukuran file terlalu besar (${sizeInMB} MB). Maksimal ukuran file adalah ${limit}.` },
         { status: 400 }
       );
     }
@@ -81,8 +90,10 @@ export async function POST(request: NextRequest) {
       });
     } catch (fsError: any) {
       // 7. Fallback for Vercel / Read-Only Serverless File Systems (EROFS)
-      // Convert tiny compressed WebP buffer into a high-compatibility Data URL
-      const mimeType = file.type || 'image/webp';
+      // Use actual MIME type so PDFs are stored as data:application/pdf
+      const mimeType = file.type && file.type !== 'application/octet-stream'
+        ? file.type
+        : isDocument ? 'application/pdf' : 'image/webp';
       const base64 = buffer.toString('base64');
       const dataUrl = `data:${mimeType};base64,${base64}`;
 
