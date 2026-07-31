@@ -29,6 +29,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+function isImageUrl(url?: string | null): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  return (
+    trimmed.startsWith('/') ||
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('data:image/')
+  );
+}
+
 export default async function ProjectDetailPage({ params }: PageProps) {
   const resolvedParams = await params;
   const project = await getProjectBySlug(resolvedParams.slug);
@@ -300,19 +311,34 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               </ScrollReveal>
             )}
 
+
+
             {/* UI/UX Design & Database Design */}
             {(caseStudy.uiUxDesign || caseStudy.databaseDesign) && (
               <ScrollReveal className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {caseStudy.uiUxDesign && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-bold font-heading text-foreground">UI/UX Design</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{caseStudy.uiUxDesign}</p>
+                    {isImageUrl(caseStudy.uiUxDesign) ? (
+                      <div className="rounded-2xl overflow-hidden border border-border bg-secondary/40 p-4 flex flex-col items-center">
+                        <div className="relative w-full aspect-video max-h-[220px]">
+                          <Image
+                            src={caseStudy.uiUxDesign}
+                            alt="UI/UX Design"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground leading-relaxed">{caseStudy.uiUxDesign}</p>
+                    )}
                   </div>
                 )}
                 {caseStudy.databaseDesign && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-bold font-heading text-foreground">Database ERD Schema</h3>
-                    {caseStudy.databaseDesign.startsWith('/') || caseStudy.databaseDesign.startsWith('http') ? (
+                    {isImageUrl(caseStudy.databaseDesign) ? (
                       <div className="rounded-2xl overflow-hidden border border-border bg-secondary/40 p-4 flex flex-col items-center">
                         <div className="relative w-full aspect-video max-h-[220px]">
                           <Image
