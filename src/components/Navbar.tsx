@@ -39,10 +39,22 @@ export default function Navbar({ cvUrl }: NavbarProps) {
   ];
 
   const handleDownloadCV = () => {
-    if (cvUrl) {
+    if (!cvUrl) {
+      alert('File CV belum diunggah. Silakan unggah file CV terlebih dahulu melalui Halaman Admin -> Profil.');
+      return;
+    }
+
+    try {
+      const link = document.createElement('a');
+      link.href = cvUrl;
+      link.download = 'CV_Nadia_Deari_Hanifah.pdf';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
       window.open(cvUrl, '_blank');
-    } else {
-      alert('CV is not uploaded yet. You can upload it in the admin panel.');
     }
   };
 
