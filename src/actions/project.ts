@@ -213,6 +213,10 @@ export async function createProject(data: {
     const sanitizedThumbnail = await sanitizeImageUrl(data.thumbnail, 'portfolio/thumbnails');
     const sanitizedProjectImages = await sanitizeImageUrls(data.projectImages, 'portfolio/projects');
 
+    const validTechIds = (data.technologyIds || [])
+      .map((t: any) => (typeof t === 'string' ? t : t?.technologyId || t?.technology?.id || t?.id))
+      .filter((techId): techId is string => typeof techId === 'string' && techId.trim() !== '');
+
     const project = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const createdProject = await tx.project.create({
         data: {
@@ -229,7 +233,7 @@ export async function createProject(data: {
           featured: data.featured,
           displayOrder,
           technologies: {
-            create: data.technologyIds.map((techId) => ({
+            create: validTechIds.map((techId) => ({
               technologyId: techId,
             })),
           },
@@ -346,6 +350,10 @@ export async function updateProject(
       const finalThumbnail = await sanitizeImageUrl(rawThumbnail, 'portfolio/thumbnails');
       const finalProjectImages = await sanitizeImageUrls(rawProjectImages, 'portfolio/projects');
 
+      const validTechIds = (data.technologyIds || [])
+        .map((t: any) => (typeof t === 'string' ? t : t?.technologyId || t?.technology?.id || t?.id))
+        .filter((techId): techId is string => typeof techId === 'string' && techId.trim() !== '');
+
       // 2. Update project + recreate relations
       const proj = await tx.project.update({
         where: { id },
@@ -362,7 +370,7 @@ export async function updateProject(
           githubUrl: data.githubUrl,
           featured: data.featured,
           technologies: {
-            create: data.technologyIds.map((techId) => ({
+            create: validTechIds.map((techId) => ({
               technologyId: techId,
             })),
           },

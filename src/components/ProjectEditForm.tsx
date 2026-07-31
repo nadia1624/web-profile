@@ -88,7 +88,9 @@ export default function ProjectEditForm({ project, allTechnologies }: ProjectEdi
   const [githubUrl, setGithubUrl] = useState(project.githubUrl || '');
   const [featured, setFeatured] = useState(project.featured);
   const [selectedTechs, setSelectedTechs] = useState<string[]>(
-    project.technologies.map((t) => t.technologyId)
+    (project.technologies || [])
+      .map((t: any) => (typeof t === 'string' ? t : t?.technologyId || t?.technology?.id || t?.id))
+      .filter((id): id is string => typeof id === 'string' && id.trim() !== '')
   );
   const [thumbnail, setThumbnail] = useState<string | null>(project.thumbnail || null);
 

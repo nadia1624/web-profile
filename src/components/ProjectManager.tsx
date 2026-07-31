@@ -205,7 +205,9 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
     setThumbnail(project.thumbnail || null);
     
     // Technologies relations
-    const tIds = project.technologies.map((t) => t.technologyId);
+    const tIds = (project.technologies || [])
+      .map((t: any) => (typeof t === 'string' ? t : t?.technologyId || t?.technology?.id || t?.id))
+      .filter((id): id is string => typeof id === 'string' && id.trim() !== '');
     setSelectedTechs(tIds);
 
     // Load Case study if existing
