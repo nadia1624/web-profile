@@ -1,11 +1,11 @@
 /**
- * Utility for image file validation & client-side compression to WebP.
+ * Utility for image file validation & client-side compression.
  */
 
 // Supported image MIME types & extensions
 export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 export const ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
-export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 /**
  * Validates file format and size
@@ -33,7 +33,7 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
     const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
     return {
       valid: false,
-      error: `Ukuran file terlalu besar (${sizeInMB} MB). Maksimal ukuran file adalah 5 MB.`,
+      error: `Ukuran file terlalu besar (${sizeInMB} MB). Maksimal ukuran file adalah 10 MB.`,
     };
   }
 
@@ -41,16 +41,15 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
 }
 
 /**
- * Client-side Canvas Image Compressor & Resizer.
- * Compresses to max 800x800px at WebP quality 0.75.
- * If the resulting compressed file is still > 400 KB, retries at lower quality.
- * Returns the compressed WebP File.
+ * Client-side Canvas Image Optimizer.
+ * Optimizes images to HD (max 1920x1920px at WebP quality 0.90) while preserving PNG transparency.
+ * Returns crisp, high-definition optimized WebP File.
  */
 export async function compressImage(
   file: File,
-  maxWidth = 800,
-  maxHeight = 800,
-  quality = 0.75
+  maxWidth = 1920,
+  maxHeight = 1920,
+  quality = 0.90
 ): Promise<File> {
   // If file is not an image (e.g. PDF CV), return original file
   if (!file.type.startsWith('image/')) {
@@ -69,7 +68,7 @@ export async function compressImage(
         let width = img.width;
         let height = img.height;
 
-        // Calculate aspect ratio — scale down to fit within maxWidth x maxHeight
+        // Scale down ONLY if image is larger than 1920px (Full HD)
         if (width > maxWidth || height > maxHeight) {
           if (width / maxWidth > height / maxHeight) {
             height = Math.round((height * maxWidth) / width);
@@ -91,41 +90,30 @@ export async function compressImage(
           return;
         }
 
-        // Draw image onto canvas (white background for transparent PNGs)
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, width, height);
+        // Clear canvas to preserve PNG transparency (no solid white background override)
+        ctx.clearRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
 
-        const attemptCompress = (q: number) => {
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) {
-                resolve(file);
-                return;
-              }
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
 
-              // If still > 400 KB and quality > 0.4, retry with lower quality
-              if (blob.size > 400 * 1024 && q > 0.4) {
-                attemptCompress(Math.max(q - 0.15, 0.4));
-                return;
-              }
+            const originalNameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+            const newFilename = `${originalNameWithoutExt}.webp`;
 
-              const originalNameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-              const newFilename = `${originalNameWithoutExt}.webp`;
+            const compressedFile = new File([blob], newFilename, {
+              type: 'image/webp',
+              lastModified: Date.now(),
+            });
 
-              const compressedFile = new File([blob], newFilename, {
-                type: 'image/webp',
-                lastModified: Date.now(),
-              });
-
-              resolve(compressedFile);
-            },
-            'image/webp',
-            q
-          );
-        };
-
-        attemptCompress(quality);
+            resolve(compressedFile);
+          },
+          'image/webp',
+          quality
+        );
       };
 
       img.onerror = () => resolve(file);

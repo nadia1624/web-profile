@@ -58,8 +58,7 @@ export async function uploadToCloudinary(
         resource_type: resourceType,
         format,
         transformation: resourceType === 'image' ? [
-          { quality: 'auto:good' },
-          { fetch_format: 'webp' },
+          { quality: 'auto:best' },
         ] : undefined,
       },
       (error, result) => {
@@ -103,7 +102,7 @@ export async function sanitizeImageUrl(
         try {
           const res = await cloudinary.uploader.upload(trimmed, {
             folder,
-            transformation: [{ quality: 'auto:good' }, { fetch_format: 'webp' }],
+            transformation: [{ quality: 'auto:best' }],
           });
           return res.secure_url;
         } catch (err) {
