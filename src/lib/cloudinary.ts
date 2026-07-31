@@ -113,10 +113,10 @@ export async function sanitizeImageUrl(
     }
 
     // 2. If Cloudinary is not configured or failed, check Base64 string length.
-    // If > 100 KB, it will cause Prisma / Neon DB query size errors.
-    // Strip it to prevent DB crashes.
-    if (trimmed.length > 100000) {
-      console.warn('Base64 image is too large (>100KB) and Cloudinary is not configured. Stripping to prevent DB crash.');
+    // Allow small compressed images (< 300 KB) as a safe DB fallback.
+    // Only strip if > 300 KB to prevent Neon DB SQL query size crashes.
+    if (trimmed.length > 300000) {
+      console.warn('Base64 image is too large (>300KB) and Cloudinary is not configured. Stripping to prevent DB crash.');
       return null;
     }
   }

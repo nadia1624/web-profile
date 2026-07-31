@@ -304,9 +304,16 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
 
     startTransition(async () => {
       let result;
-      // Helper to ensure raw Base64 data URLs are not sent over Server Action bridge
-      const safeUrl = (url: string | null | undefined) => (url && typeof url === 'string' && !url.startsWith('data:') ? url : null);
-      const safeUrls = (urls: string[]) => (Array.isArray(urls) ? urls.filter((u) => u && typeof u === 'string' && !u.startsWith('data:')) : []);
+      // Helper to ensure raw Base64 data URLs > 300KB are not sent over Server Action bridge
+      const safeUrl = (url: string | null | undefined) => {
+        if (!url || typeof url !== 'string') return null;
+        if (url.startsWith('data:') && url.length > 300000) return null;
+        return url;
+      };
+      const safeUrls = (urls: string[]) =>
+        Array.isArray(urls)
+          ? urls.filter((u) => u && typeof u === 'string' && (!u.startsWith('data:') || u.length <= 300000))
+          : [];
 
       const caseStudyPayload = showCaseStudy ? {
         overview: csOverview || null,
