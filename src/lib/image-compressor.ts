@@ -15,7 +15,7 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
     return { valid: false, error: 'File tidak ditemukan.' };
   }
 
-  // Allow PDF/documents for CV uploads if needed, but for images enforce image types
+  // Allow PDF/documents for CV uploads, but for images enforce image types
   const isImage = file.type.startsWith('image/');
   if (isImage) {
     const extension = '.' + file.name.split('.').pop()?.toLowerCase();
@@ -41,14 +41,16 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
 }
 
 /**
- * Client-side Canvas Image Compressor & Resizer
- * Automatically resizes images down to max 1200x1200px and exports as optimized WebP
+ * Client-side Canvas Image Compressor & Resizer.
+ * Compresses to max 800x800px at WebP quality 0.75.
+ * If the resulting compressed file is still > 400 KB, retries at lower quality.
+ * Returns the compressed WebP File.
  */
 export async function compressImage(
   file: File,
-  maxWidth = 1200,
-  maxHeight = 1200,
-  quality = 0.80
+  maxWidth = 800,
+  maxHeight = 800,
+  quality = 0.75
 ): Promise<File> {
   // If file is not an image (e.g. PDF CV), return original file
   if (!file.type.startsWith('image/')) {
@@ -67,9 +69,9 @@ export async function compressImage(
         let width = img.width;
         let height = img.height;
 
-        // Calculate aspect ratio
+        // Calculate aspect ratio — scale down to fit within maxWidth x maxHeight
         if (width > maxWidth || height > maxHeight) {
-          if (width > height) {
+          if (width / maxWidth > height / maxHeight) {
             height = Math.round((height * maxWidth) / width);
             width = maxWidth;
           } else {
@@ -89,33 +91,41 @@ export async function compressImage(
           return;
         }
 
-        // Draw image onto canvas
+        // Draw image onto canvas (white background for transparent PNGs)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Prefer WebP export if supported, otherwise fallback to JPEG
-        const targetMime = 'image/webp';
-        
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              resolve(file);
-              return;
-            }
+        const attemptCompress = (q: number) => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                resolve(file);
+                return;
+              }
 
-            // Create WebP filename
-            const originalNameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-            const newFilename = `${originalNameWithoutExt}.webp`;
+              // If still > 400 KB and quality > 0.4, retry with lower quality
+              if (blob.size > 400 * 1024 && q > 0.4) {
+                attemptCompress(Math.max(q - 0.15, 0.4));
+                return;
+              }
 
-            const compressedFile = new File([blob], newFilename, {
-              type: targetMime,
-              lastModified: Date.now(),
-            });
+              const originalNameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+              const newFilename = `${originalNameWithoutExt}.webp`;
 
-            resolve(compressedFile);
-          },
-          targetMime,
-          quality
-        );
+              const compressedFile = new File([blob], newFilename, {
+                type: 'image/webp',
+                lastModified: Date.now(),
+              });
+
+              resolve(compressedFile);
+            },
+            'image/webp',
+            q
+          );
+        };
+
+        attemptCompress(quality);
       };
 
       img.onerror = () => resolve(file);

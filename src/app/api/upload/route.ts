@@ -4,7 +4,10 @@ import { join } from 'path';
 import { verifyJWT } from '@/lib/auth';
 
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB for images
-const MAX_DOC_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB for documents (PDF/DOC)
+const MAX_DOC_SIZE_BYTES = 10 * 1024 * 1024;  // 10 MB for documents (PDF/DOC)
+// Max base64 Data URL size to store in DB as fallback (500 KB binary ≈ 667 KB base64)
+// Images larger than this MUST use disk or cloud storage; we reject otherwise.
+const MAX_BASE64_FALLBACK_BYTES = 500 * 1024; // 500 KB
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -38,13 +41,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Tidak ada file yang diunggah.' }, { status: 400 });
     }
 
-    // 3. Backend Size Validation
+    // 3. Detect file type
     const isDocument = file.type === 'application/pdf' ||
       file.type === 'application/msword' ||
       file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
       file.name.toLowerCase().endsWith('.pdf') ||
       file.name.toLowerCase().endsWith('.doc') ||
       file.name.toLowerCase().endsWith('.docx');
+
+    // 4. Backend Size Validation
     const maxSize = isDocument ? MAX_DOC_SIZE_BYTES : MAX_IMAGE_SIZE_BYTES;
     if (file.size > maxSize) {
       const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
@@ -55,7 +60,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Format & Extension Validation
+    // 5. Format & Extension Validation
     const fileNameLower = file.name.toLowerCase();
     const extension = '.' + fileNameLower.split('.').pop();
     const isMimeValid = ALLOWED_MIME_TYPES.includes(file.type.toLowerCase());
@@ -68,11 +73,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Convert file stream to buffer
+    // 6. Convert file stream to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // 6. Try saving to local disk (/public/uploads)
+    // 7a. Try Cloudinary upload first (works on Vercel / serverless)
+    if (process.env.CLOUDINARY_URL) {
+      try {
+        const { uploadToCloudinary } = await import('@/lib/cloudinary');
+        const folder = isDocument ? 'portfolio/documents' : 'portfolio/images';
+        const cloudUrl = await uploadToCloudinary(buffer, folder, file.type || 'image/webp');
+        return NextResponse.json({
+          success: true,
+          url: cloudUrl,
+          filename: file.name,
+          size: file.size,
+        });
+      } catch (cloudErr) {
+        console.warn('Cloudinary upload failed, falling back:', cloudErr);
+      }
+    }
+
+    // 7b. Try saving to local disk (/public/uploads)
     try {
       const sanitizedOriginalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
       const filename = `${Date.now()}_${sanitizedOriginalName}`;
@@ -89,8 +111,19 @@ export async function POST(request: NextRequest) {
         size: file.size,
       });
     } catch (fsError: any) {
-      // 7. Fallback for Vercel / Read-Only Serverless File Systems (EROFS)
-      // Use actual MIME type so PDFs are stored as data:application/pdf
+      // 7c. Last resort: Base64 Data URL fallback
+      // ONLY allowed if the binary data is small enough to store in DB safely.
+      if (buffer.byteLength > MAX_BASE64_FALLBACK_BYTES) {
+        return NextResponse.json(
+          {
+            error:
+              `Penyimpanan file tidak tersedia dan gambar terlalu besar untuk disimpan sementara (${(buffer.byteLength / 1024).toFixed(0)} KB). ` +
+              `Silakan konfigurasi Cloudinary di environment variable CLOUDINARY_URL, atau gunakan gambar yang lebih kecil (< 500 KB setelah kompresi).`,
+          },
+          { status: 507 }
+        );
+      }
+
       const mimeType = file.type && file.type !== 'application/octet-stream'
         ? file.type
         : isDocument ? 'application/pdf' : 'image/webp';
@@ -105,9 +138,9 @@ export async function POST(request: NextRequest) {
       });
     }
   } catch (error: any) {
-    console.error('Image upload endpoint error:', error);
+    console.error('Upload endpoint error:', error);
     return NextResponse.json(
-      { error: error.message || 'Gagal mengunggah file gambar.' },
+      { error: error.message || 'Gagal mengunggah file.' },
       { status: 500 }
     );
   }
