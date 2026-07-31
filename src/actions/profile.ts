@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { getCurrentAdmin } from './auth';
+import { sanitizeImageUrl } from '@/lib/cloudinary';
 
 import { cache } from 'react';
 
@@ -44,7 +45,7 @@ export async function updateProfile(data: {
     const existing = await prisma.profile.findFirst();
     
     if (existing) {
-      const finalImage =
+      const rawImage =
         data.profileImage !== undefined && data.profileImage !== null && data.profileImage !== ''
           ? data.profileImage
           : existing.profileImage;
@@ -53,6 +54,8 @@ export async function updateProfile(data: {
         data.cvUrl !== undefined && data.cvUrl !== null && data.cvUrl !== ''
           ? data.cvUrl
           : existing.cvUrl;
+
+      const finalImage = await sanitizeImageUrl(rawImage, 'portfolio/profile');
 
       const updated = await prisma.profile.update({
         where: { id: existing.id },
@@ -73,13 +76,14 @@ export async function updateProfile(data: {
       });
       return { success: true, data: JSON.parse(JSON.stringify(updated)) };
     } else {
+      const finalImage = await sanitizeImageUrl(data.profileImage, 'portfolio/profile');
       const created = await prisma.profile.create({
         data: {
           name: data.name,
           headline: data.headline,
           shortBio: data.shortBio,
           bio: data.bio,
-          profileImage: data.profileImage,
+          profileImage: finalImage,
           email: data.email,
           phone: data.phone,
           location: data.location,

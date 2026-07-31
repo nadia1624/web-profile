@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { getCurrentAdmin } from './auth';
+import { sanitizeImageUrl, sanitizeImageUrls } from '@/lib/cloudinary';
 
 import { cache } from 'react';
 
@@ -60,25 +61,30 @@ export async function upsertCaseStudy(
   try {
     const existing = await prisma.caseStudy.findUnique({ where: { projectId } });
 
-    const finalBpmn =
+    const rawBpmn =
       data.bpmn !== undefined && data.bpmn !== null && data.bpmn !== ''
         ? data.bpmn
         : (existing?.bpmn || null);
 
-    const finalUml =
+    const rawUml =
       data.uml !== undefined && data.uml !== null && data.uml !== ''
         ? data.uml
         : (existing?.uml || null);
 
-    const finalDbDesign =
+    const rawDbDesign =
       data.databaseDesign !== undefined && data.databaseDesign !== null && data.databaseDesign !== ''
         ? data.databaseDesign
         : (existing?.databaseDesign || null);
 
-    const finalScreenshots =
+    const rawScreenshots =
       data.applicationScreenshots && data.applicationScreenshots.length > 0
         ? data.applicationScreenshots
         : (existing?.applicationScreenshots || []);
+
+    const finalBpmn = await sanitizeImageUrl(rawBpmn, 'portfolio/diagrams');
+    const finalUml = await sanitizeImageUrl(rawUml, 'portfolio/diagrams');
+    const finalDbDesign = await sanitizeImageUrl(rawDbDesign, 'portfolio/diagrams');
+    const finalScreenshots = await sanitizeImageUrls(rawScreenshots, 'portfolio/screenshots');
 
     const caseStudy = await prisma.caseStudy.upsert({
       where: { projectId },

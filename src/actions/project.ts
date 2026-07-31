@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import { getCurrentAdmin } from './auth';
+import { sanitizeImageUrl, sanitizeImageUrls } from '@/lib/cloudinary';
 
 /**
  * Helper to generate a slug from a title
@@ -208,6 +209,10 @@ export async function createProject(data: {
     });
     const displayOrder = lastProj ? lastProj.displayOrder + 1 : 0;
 
+    // Sanitize image fields before DB operation
+    const sanitizedThumbnail = await sanitizeImageUrl(data.thumbnail, 'portfolio/thumbnails');
+    const sanitizedProjectImages = await sanitizeImageUrls(data.projectImages, 'portfolio/projects');
+
     const project = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const createdProject = await tx.project.create({
         data: {
@@ -217,8 +222,8 @@ export async function createProject(data: {
           fullDescription: data.fullDescription,
           category: data.category,
           role: data.role,
-          thumbnail: data.thumbnail,
-          projectImages: data.projectImages,
+          thumbnail: sanitizedThumbnail,
+          projectImages: sanitizedProjectImages,
           liveUrl: data.liveUrl,
           githubUrl: data.githubUrl,
           featured: data.featured,
@@ -232,6 +237,11 @@ export async function createProject(data: {
       });
 
       if (data.caseStudy) {
+        const sanitizedBpmn = await sanitizeImageUrl(data.caseStudy.bpmn, 'portfolio/diagrams');
+        const sanitizedUml = await sanitizeImageUrl(data.caseStudy.uml, 'portfolio/diagrams');
+        const sanitizedDbDesign = await sanitizeImageUrl(data.caseStudy.databaseDesign, 'portfolio/diagrams');
+        const sanitizedScreenshots = await sanitizeImageUrls(data.caseStudy.applicationScreenshots || [], 'portfolio/screenshots');
+
         await tx.caseStudy.create({
           data: {
             projectId: createdProject.id,
@@ -249,11 +259,11 @@ export async function createProject(data: {
             asIsProcess: data.caseStudy.asIsProcess || null,
             toBeProcess: data.caseStudy.toBeProcess || null,
             requirementsAnalysis: data.caseStudy.requirementsAnalysis || null,
-            bpmn: data.caseStudy.bpmn || null,
-            uml: data.caseStudy.uml || null,
+            bpmn: sanitizedBpmn,
+            uml: sanitizedUml,
             uiUxDesign: data.caseStudy.uiUxDesign || null,
-            databaseDesign: data.caseStudy.databaseDesign || null,
-            applicationScreenshots: data.caseStudy.applicationScreenshots || [],
+            databaseDesign: sanitizedDbDesign,
+            applicationScreenshots: sanitizedScreenshots,
             uat: data.caseStudy.uat || null,
           },
         });
@@ -323,15 +333,18 @@ export async function updateProject(
         where: { projectId: id },
       });
 
-      const finalThumbnail =
+      const rawThumbnail =
         data.thumbnail !== undefined && data.thumbnail !== null && data.thumbnail !== ''
           ? data.thumbnail
           : existing.thumbnail;
 
-      const finalProjectImages =
+      const rawProjectImages =
         data.projectImages && data.projectImages.length > 0
           ? data.projectImages
           : existing.projectImages;
+
+      const finalThumbnail = await sanitizeImageUrl(rawThumbnail, 'portfolio/thumbnails');
+      const finalProjectImages = await sanitizeImageUrls(rawProjectImages, 'portfolio/projects');
 
       // 2. Update project + recreate relations
       const proj = await tx.project.update({
@@ -360,25 +373,30 @@ export async function updateProject(
       if (data.caseStudy) {
         const existingCs = await tx.caseStudy.findUnique({ where: { projectId: id } });
 
-        const finalBpmn =
+        const rawBpmn =
           data.caseStudy.bpmn !== undefined && data.caseStudy.bpmn !== null && data.caseStudy.bpmn !== ''
             ? data.caseStudy.bpmn
             : (existingCs?.bpmn || null);
 
-        const finalUml =
+        const rawUml =
           data.caseStudy.uml !== undefined && data.caseStudy.uml !== null && data.caseStudy.uml !== ''
             ? data.caseStudy.uml
             : (existingCs?.uml || null);
 
-        const finalDbDesign =
+        const rawDbDesign =
           data.caseStudy.databaseDesign !== undefined && data.caseStudy.databaseDesign !== null && data.caseStudy.databaseDesign !== ''
             ? data.caseStudy.databaseDesign
             : (existingCs?.databaseDesign || null);
 
-        const finalScreenshots =
+        const rawScreenshots =
           data.caseStudy.applicationScreenshots && data.caseStudy.applicationScreenshots.length > 0
             ? data.caseStudy.applicationScreenshots
             : (existingCs?.applicationScreenshots || []);
+
+        const finalBpmn = await sanitizeImageUrl(rawBpmn, 'portfolio/diagrams');
+        const finalUml = await sanitizeImageUrl(rawUml, 'portfolio/diagrams');
+        const finalDbDesign = await sanitizeImageUrl(rawDbDesign, 'portfolio/diagrams');
+        const finalScreenshots = await sanitizeImageUrls(rawScreenshots, 'portfolio/screenshots');
 
         await tx.caseStudy.upsert({
           where: { projectId: id },
@@ -420,11 +438,11 @@ export async function updateProject(
             asIsProcess: data.caseStudy.asIsProcess || null,
             toBeProcess: data.caseStudy.toBeProcess || null,
             requirementsAnalysis: data.caseStudy.requirementsAnalysis || null,
-            bpmn: data.caseStudy.bpmn || null,
-            uml: data.caseStudy.uml || null,
+            bpmn: finalBpmn,
+            uml: finalUml,
             uiUxDesign: data.caseStudy.uiUxDesign || null,
-            databaseDesign: data.caseStudy.databaseDesign || null,
-            applicationScreenshots: data.caseStudy.applicationScreenshots || [],
+            databaseDesign: finalDbDesign,
+            applicationScreenshots: finalScreenshots,
             uat: data.caseStudy.uat || null,
           },
         });
