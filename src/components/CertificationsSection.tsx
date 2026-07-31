@@ -59,15 +59,15 @@ export default function CertificationsSection({ certifications }: Certifications
   const renderCardGrid = (items: CertificationItem[]) => {
     if (items.length === 0) {
       return (
-        <div className="text-center py-12 glass-panel rounded-2xl text-muted-foreground my-4">
-          <Award className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm">No entries found in this category.</p>
+        <div className="text-center py-10 sm:py-12 glass-panel rounded-2xl text-muted-foreground my-4 px-4">
+          <Award className="w-9 h-9 sm:w-10 sm:h-10 text-muted-foreground/30 mx-auto mb-3" />
+          <p className="text-xs sm:text-sm">No entries found in this category.</p>
         </div>
       );
     }
 
     return (
-      <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {items.map((item) => {
           const itemIsTraining = isTraining(item);
 
@@ -79,35 +79,35 @@ export default function CertificationsSection({ certifications }: Certifications
               <div>
                 {/* Certificate Image Preview Banner */}
                 {item.certificateImage ? (
-                  <div className="relative w-full aspect-[16/10] bg-secondary overflow-hidden border-b border-border group/img">
+                  <div 
+                    onClick={() =>
+                      setSelectedImage({
+                        url: item.certificateImage!,
+                        title: item.name,
+                        org: item.issuingOrganization,
+                      })
+                    }
+                    className="relative w-full aspect-[16/9] sm:aspect-[16/10] bg-secondary overflow-hidden border-b border-border group/img cursor-pointer"
+                  >
                     <Image
                       src={item.certificateImage}
                       alt={item.name}
                       fill
-                      sizes="(max-w-768px) 100vw, 380px"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
                       className="object-cover transition-transform duration-500 group-hover/img:scale-105"
                     />
                     
-                    {/* Hover Lightbox Overlay */}
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 backdrop-blur-xs">
-                      <button
-                        onClick={() =>
-                          setSelectedImage({
-                            url: item.certificateImage!,
-                            title: item.name,
-                            org: item.issuingOrganization,
-                          })
-                        }
-                        className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
-                      >
-                        <ZoomIn className="w-4 h-4" />
+                    {/* Hover/Tap Lightbox Overlay */}
+                    <div className="absolute inset-0 bg-black/50 sm:opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 backdrop-blur-xs">
+                      <span className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-purple-600/90 text-white text-[11px] sm:text-xs font-semibold shadow-lg flex items-center gap-1.5">
+                        <ZoomIn className="w-3.5 h-3.5" />
                         Preview Image
-                      </button>
+                      </span>
                     </div>
 
                     {/* Badge */}
                     <span
-                      className={`absolute top-3 left-3 z-10 text-[9px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full border backdrop-blur-md shadow-sm ${
+                      className={`absolute top-2.5 left-2.5 z-10 text-[8px] sm:text-[9px] uppercase font-bold tracking-wider px-2 sm:px-2.5 py-0.5 rounded-full border backdrop-blur-md shadow-sm ${
                         itemIsTraining
                           ? 'bg-blue-950/80 light:bg-blue-50/90 text-blue-400 light:text-blue-700 border-blue-500/30'
                           : 'bg-purple-950/80 light:bg-purple-50/90 text-purple-400 light:text-purple-700 border-purple-500/30'
@@ -117,9 +117,9 @@ export default function CertificationsSection({ certifications }: Certifications
                     </span>
                   </div>
                 ) : (
-                  <div className="p-4 border-b border-border bg-secondary/50 flex items-center justify-between">
+                  <div className="p-3.5 sm:p-4 border-b border-border bg-secondary/50 flex items-center justify-between">
                     <span
-                      className={`text-[9px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full border ${
+                      className={`text-[8px] sm:text-[9px] uppercase font-bold tracking-wider px-2 sm:px-2.5 py-0.5 rounded-full border ${
                         itemIsTraining
                           ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
                           : 'bg-purple-500/10 text-purple-500 border-purple-500/20'
@@ -131,9 +131,9 @@ export default function CertificationsSection({ certifications }: Certifications
                 )}
 
                 {/* Card Content */}
-                <div className="p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <h3 className="text-base font-bold font-heading text-foreground group-hover:text-purple-500 transition-colors">
+                <div className="p-4 sm:p-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-sm sm:text-base font-bold font-heading text-foreground group-hover:text-purple-500 transition-colors leading-snug">
                       {item.name}
                     </h3>
                   </div>
@@ -142,8 +142,8 @@ export default function CertificationsSection({ certifications }: Certifications
                     {item.issuingOrganization}
                   </p>
 
-                  <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground mt-3">
-                    <Calendar className="w-3.5 h-3.5" />
+                  <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground mt-2.5 sm:mt-3">
+                    <Calendar className="w-3.5 h-3.5 shrink-0" />
                     <span>
                       {new Date(item.issueDate).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -153,7 +153,7 @@ export default function CertificationsSection({ certifications }: Certifications
                   </div>
 
                   {item.description && (
-                    <p className="text-xs text-muted-foreground mt-3 leading-relaxed line-clamp-3">
+                    <p className="text-xs text-muted-foreground mt-2.5 sm:mt-3 leading-relaxed line-clamp-3">
                       {item.description}
                     </p>
                   )}
@@ -161,16 +161,16 @@ export default function CertificationsSection({ certifications }: Certifications
               </div>
 
               {/* Card Footer Actions */}
-              <div className="p-6 pt-0 mt-4 flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-4">
+              <div className="p-4 sm:p-6 pt-0 mt-2 sm:mt-4 flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-3 sm:pt-4">
                 {item.credentialId ? (
-                  <span className="text-[10px] font-mono text-muted-foreground">
+                  <span className="text-[9px] sm:text-[10px] font-mono text-muted-foreground truncate max-w-[140px]">
                     ID: {item.credentialId}
                   </span>
                 ) : (
                   <span />
                 )}
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   {item.certificateImage && (
                     <button
                       onClick={() =>
@@ -192,7 +192,7 @@ export default function CertificationsSection({ certifications }: Certifications
                       href={item.credentialUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-purple-500 hover:text-purple-400 font-medium flex items-center gap-1 transition-colors"
+                      className="text-purple-500 hover:text-purple-400 font-medium flex items-center gap-1 text-xs transition-colors"
                     >
                       Verify
                       <ExternalLink className="w-3 h-3" />
@@ -208,50 +208,50 @@ export default function CertificationsSection({ certifications }: Certifications
   };
 
   return (
-    <div className="w-full space-y-12">
+    <div className="w-full space-y-8 sm:space-y-12">
       {/* Section Header */}
       <ScrollReveal>
-        <div className="text-center max-w-2xl mx-auto mb-10">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-10 px-2">
           <span className="text-xs uppercase tracking-wider font-semibold text-purple-500">
             Qualifications & Continuous Learning
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold font-heading text-foreground mt-1">
+          <h2 className="text-2xl sm:text-4xl font-bold font-heading text-foreground mt-1">
             Certifications & Training
           </h2>
-          <p className="text-muted-foreground mt-2 text-sm sm:text-base leading-relaxed">
+          <p className="text-muted-foreground mt-2 text-xs sm:text-base leading-relaxed">
             Professional certifications, technical workshops, and enterprise architecture training programs.
           </p>
         </div>
       </ScrollReveal>
 
       {/* 2 Filter Tabs Only */}
-      <div className="flex items-center justify-center gap-3 mb-10">
+      <div className="flex flex-row items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-10 w-full px-1">
         <button
           onClick={() => setActiveTab('certification')}
-          className={`px-6 py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center gap-2.5 ${
+          className={`flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 ${
             activeTab === 'certification'
               ? 'bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-900/30 light:shadow-purple-400/20'
               : 'bg-secondary text-muted-foreground border-border hover:text-foreground hover:border-purple-500/40'
           }`}
         >
-          <Award className="w-4 h-4" />
-          <span>Certifications</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] bg-black/20 text-white font-mono">
+          <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+          <span className="truncate">Certifications</span>
+          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] bg-black/20 text-white font-mono">
             {certList.length}
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab('training')}
-          className={`px-6 py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center gap-2.5 ${
+          className={`flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 ${
             activeTab === 'training'
               ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-900/30 light:shadow-blue-400/20'
               : 'bg-secondary text-muted-foreground border-border hover:text-foreground hover:border-blue-500/40'
           }`}
         >
-          <GraduationCap className="w-4 h-4" />
-          <span>Trainings & Workshops</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] bg-black/20 text-white font-mono">
+          <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+          <span className="truncate">Trainings & Workshops</span>
+          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] bg-black/20 text-white font-mono">
             {trainingList.length}
           </span>
         </button>
@@ -278,7 +278,7 @@ export default function CertificationsSection({ certifications }: Certifications
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedImage(null)}
-            className="fixed inset-0 z-[999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-8"
+            className="fixed inset-0 z-[999] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-8"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -289,25 +289,25 @@ export default function CertificationsSection({ certifications }: Certifications
               className="relative max-w-4xl w-full bg-card rounded-2xl overflow-hidden border border-border shadow-2xl flex flex-col max-h-[90vh]"
             >
               {/* Modal Header */}
-              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border bg-secondary/30">
-                <div>
-                  <h3 className="text-base sm:text-lg font-bold font-heading text-foreground">
+              <div className="flex items-center justify-between p-3.5 sm:p-6 border-b border-border bg-secondary/30">
+                <div className="min-w-0 pr-2">
+                  <h3 className="text-sm sm:text-lg font-bold font-heading text-foreground truncate">
                     {selectedImage.title}
                   </h3>
-                  <p className="text-xs text-purple-500 light:text-purple-700 font-semibold mt-0.5">
+                  <p className="text-xs text-purple-500 light:text-purple-700 font-semibold mt-0.5 truncate">
                     {selectedImage.org}
                   </p>
                 </div>
                 <button
                   onClick={() => setSelectedImage(null)}
-                  className="p-2 rounded-xl bg-secondary text-muted-foreground hover:text-foreground hover:bg-border transition-colors cursor-pointer"
+                  className="p-1.5 sm:p-2 rounded-xl bg-secondary text-muted-foreground hover:text-foreground hover:bg-border transition-colors cursor-pointer shrink-0"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Modal Image Viewer */}
-              <div className="relative w-full h-[50vh] sm:h-[65vh] bg-black flex items-center justify-center p-4 overflow-hidden">
+              <div className="relative w-full h-[55vh] sm:h-[65vh] bg-black flex items-center justify-center p-2 sm:p-4 overflow-hidden">
                 <Image
                   src={selectedImage.url}
                   alt={selectedImage.title}

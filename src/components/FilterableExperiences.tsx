@@ -49,25 +49,25 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
   const renderExperienceList = (items: ExperienceItem[]) => {
     if (items.length === 0) {
       return (
-        <div className="text-center py-12 glass-panel rounded-2xl text-muted-foreground my-4">
-          <Briefcase className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm">No experience records found in this category.</p>
+        <div className="text-center py-10 sm:py-12 glass-panel rounded-2xl text-muted-foreground my-4 px-4">
+          <Briefcase className="w-9 h-9 sm:w-10 sm:h-10 text-muted-foreground/30 mx-auto mb-3" />
+          <p className="text-xs sm:text-sm">No experience records found in this category.</p>
         </div>
       );
     }
 
     return (
-      <StaggerContainer className="space-y-6 max-w-4xl mx-auto">
+      <StaggerContainer className="space-y-4 sm:space-y-6 max-w-4xl mx-auto">
         {items.map((exp) => {
           const isOrg = isOrganizationExp(exp);
 
           return (
             <StaggerItem key={exp.id}>
-              <div className="glass-panel glass-panel-hover p-6 sm:p-7 rounded-2xl border border-border transition-all duration-300 hover:border-purple-500/40 relative overflow-hidden group">
+              <div className="glass-panel glass-panel-hover p-4 sm:p-7 rounded-2xl border border-border transition-all duration-300 hover:border-purple-500/40 relative overflow-hidden group">
                 {/* Header Row: Logo, Role, Company, and Category Badges */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-5">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-secondary border border-border overflow-hidden shrink-0 flex items-center justify-center text-purple-500 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-border/60 pb-4 sm:pb-5">
+                  <div className="flex items-center sm:items-start gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-secondary border border-border overflow-hidden shrink-0 flex items-center justify-center text-purple-500 shadow-sm">
                       {exp.companyLogo ? (
                         <Image
                           src={exp.companyLogo}
@@ -77,17 +77,17 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
                           className="object-cover w-full h-full"
                         />
                       ) : isOrg ? (
-                        <Users className="w-5 h-5 text-indigo-500" />
+                        <Users className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500" />
                       ) : (
-                        <Briefcase className="w-5 h-5 text-purple-500" />
+                        <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
                       )}
                     </div>
 
-                    <div>
-                      <h3 className="text-base sm:text-lg font-bold font-heading text-foreground group-hover:text-purple-500 transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm sm:text-lg font-bold font-heading text-foreground group-hover:text-purple-500 transition-colors leading-snug">
                         {exp.position}
                       </h3>
-                      <p className="text-xs sm:text-sm text-purple-500 light:text-purple-700 font-semibold mt-0.5">
+                      <p className="text-xs sm:text-sm text-purple-500 light:text-purple-700 font-semibold mt-0.5 truncate">
                         {exp.company}
                       </p>
                     </div>
@@ -95,9 +95,9 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
 
                   {/* Date & Employment Type Badges */}
                   <div className="flex flex-wrap items-center gap-2 sm:flex-col sm:items-end">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary text-foreground text-xs font-medium border border-border">
-                      <Calendar className="w-3.5 h-3.5 text-purple-500" />
-                      <span>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-secondary text-foreground text-[11px] sm:text-xs font-medium border border-border">
+                      <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-500 shrink-0" />
+                      <span className="whitespace-nowrap">
                         {new Date(exp.startDate).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short',
@@ -113,8 +113,8 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
                     </div>
 
                     {exp.location && (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                        <MapPin className="w-3 h-3" />
+                      <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-muted-foreground">
+                        <MapPin className="w-3 h-3 shrink-0" />
                         {exp.location}
                       </span>
                     )}
@@ -123,24 +123,24 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
 
                 {/* Description */}
                 {exp.description && (
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-4 leading-relaxed italic border-l-2 border-purple-500/40 pl-3">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-4 leading-relaxed italic border-l-2 border-purple-500/40 pl-3">
                     {exp.description}
                   </p>
                 )}
 
                 {/* Key Responsibilities & Achievements */}
                 {exp.responsibilities && exp.responsibilities.length > 0 && (
-                  <div className="mt-5">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2.5">
+                  <div className="mt-4 sm:mt-5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
                       Key Responsibilities & Contributions
                     </p>
-                    <ul className="space-y-2">
+                    <ul className="space-y-1.5 sm:space-y-2">
                       {exp.responsibilities.map((resp: string, rIdx: number) => (
                         <li
                           key={rIdx}
-                          className="flex items-start gap-2.5 text-xs sm:text-sm text-foreground leading-relaxed"
+                          className="flex items-start gap-2 text-xs sm:text-sm text-foreground leading-relaxed"
                         >
-                          <ChevronRight className="w-4 h-4 text-purple-500 mt-0.5 shrink-0" />
+                          <ChevronRight className="w-3.5 h-3.5 text-purple-500 mt-0.5 shrink-0" />
                           <span>{resp}</span>
                         </li>
                       ))}
@@ -150,7 +150,7 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
 
                 {/* Technologies / Skills Used */}
                 {exp.technologies && exp.technologies.length > 0 && (
-                  <div className="mt-6 pt-4 border-t border-border/60 flex flex-wrap items-center gap-2">
+                  <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-border/60 flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1 flex items-center gap-1">
                       <Layers className="w-3 h-3 text-purple-500" />
                       Skills:
@@ -158,7 +158,7 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
                     {exp.technologies.map((tech: string) => (
                       <span
                         key={tech}
-                        className="tech-tag text-[10px] sm:text-xs font-medium bg-secondary text-foreground border border-border px-2.5 py-0.5 rounded-lg hover:border-purple-500/30 transition-colors"
+                        className="tech-tag text-[10px] sm:text-xs font-medium bg-secondary text-foreground border border-border px-2 sm:px-2.5 py-0.5 rounded-md sm:rounded-lg hover:border-purple-500/30 transition-colors"
                       >
                         {tech}
                       </span>
@@ -174,35 +174,35 @@ export default function FilterableExperiences({ experiences }: FilterableExperie
   };
 
   return (
-    <div className="w-full space-y-8 max-w-4xl mx-auto">
+    <div className="w-full space-y-6 sm:space-y-8 max-w-4xl mx-auto px-1 sm:px-0">
       {/* Exactly 2 Filter Tabs (Work & Internship vs Organization) */}
-      <div className="flex items-center justify-center gap-3 mb-10">
+      <div className="flex flex-row items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-10 w-full">
         <button
           onClick={() => setActiveTab('work')}
-          className={`px-6 py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center gap-2.5 ${
+          className={`flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 ${
             activeTab === 'work'
               ? 'bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-900/30 light:shadow-purple-400/20'
               : 'bg-secondary text-muted-foreground border-border hover:text-foreground hover:border-purple-500/40'
           }`}
         >
-          <Building2 className="w-4 h-4" />
-          <span>Work & Internship</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] bg-black/20 text-white font-mono">
+          <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+          <span className="truncate">Work & Internship</span>
+          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] bg-black/20 text-white font-mono">
             {workExperiences.length}
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab('organization')}
-          className={`px-6 py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center gap-2.5 ${
+          className={`flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs font-semibold tracking-wide border transition-all cursor-pointer active:scale-95 flex items-center justify-center gap-2 ${
             activeTab === 'organization'
               ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-900/30 light:shadow-indigo-400/20'
               : 'bg-secondary text-muted-foreground border-border hover:text-foreground hover:border-indigo-500/40'
           }`}
         >
-          <Users className="w-4 h-4" />
-          <span>Organization</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] bg-black/20 text-white font-mono">
+          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+          <span className="truncate">Organization</span>
+          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] bg-black/20 text-white font-mono">
             {orgExperiences.length}
           </span>
         </button>

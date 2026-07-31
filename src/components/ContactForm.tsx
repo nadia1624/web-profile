@@ -29,7 +29,18 @@ export default function ContactForm() {
     }
     setStatus('loading');
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // 1. Simulate network delay
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // 2. Direct mailto launch to target email address: nadiadearihanifah@gmail.com
+      const mailtoUrl = `mailto:nadiadearihanifah@gmail.com?subject=${encodeURIComponent(
+        formData.subject || `Portfolio Message from ${formData.name}`
+      )}&body=${encodeURIComponent(
+        `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
+      )}`;
+
+      window.location.href = mailtoUrl;
+
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch {
@@ -43,18 +54,18 @@ export default function ContactForm() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="glass-panel p-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 text-center flex flex-col items-center justify-center py-16"
+        className="glass-panel p-6 sm:p-8 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 text-center flex flex-col items-center justify-center py-12 sm:py-16"
       >
-        <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/35 text-emerald-500 flex items-center justify-center mb-6 animate-bounce">
-          <CheckCircle2 className="w-8 h-8" />
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500/10 border border-emerald-500/35 text-emerald-500 flex items-center justify-center mb-6 animate-bounce">
+          <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8" />
         </div>
-        <h3 className="text-xl font-bold font-heading text-foreground">Message Sent Successfully!</h3>
-        <p className="text-muted-foreground text-sm mt-3 max-w-sm leading-relaxed">
-          Thank you for reaching out. I have received your message and will respond to you as soon as possible.
+        <h3 className="text-lg sm:text-xl font-bold font-heading text-foreground">Message Ready to Send!</h3>
+        <p className="text-muted-foreground text-xs sm:text-sm mt-3 max-w-sm leading-relaxed">
+          Pesan Anda telah disiapkan dan diarahkan langsung ke email <strong className="text-purple-500">nadiadearihanifah@gmail.com</strong>.
         </p>
         <button
           onClick={() => setStatus('idle')}
-          className="mt-8 px-6 py-2.5 rounded-full bg-secondary border border-border text-foreground text-xs font-semibold hover:bg-purple-500/10 hover:border-purple-500/30 hover:text-purple-500 transition-all cursor-pointer active:scale-95"
+          className="mt-6 sm:mt-8 px-6 py-2.5 rounded-full bg-secondary border border-border text-foreground text-xs font-semibold hover:bg-purple-500/10 hover:border-purple-500/30 hover:text-purple-500 transition-all cursor-pointer active:scale-95"
         >
           Send Another Message
         </button>
@@ -63,7 +74,7 @@ export default function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="glass-panel p-8 rounded-2xl border border-border space-y-6">
+    <form onSubmit={handleSubmit} className="glass-panel p-5 sm:p-8 rounded-2xl border border-border space-y-5 sm:space-y-6">
       {status === 'error' && (
         <motion.div
           initial={{ opacity: 0, y: -8 }}
@@ -75,9 +86,9 @@ export default function ContactForm() {
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
         <div className="flex flex-col gap-2">
-          <label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <label htmlFor="name" className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Your Name <span className="text-red-500">*</span>
           </label>
           <input
@@ -94,7 +105,7 @@ export default function ContactForm() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <label htmlFor="email" className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Email Address <span className="text-red-500">*</span>
           </label>
           <input
@@ -112,7 +123,7 @@ export default function ContactForm() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="subject" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <label htmlFor="subject" className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">
           Subject
         </label>
         <input
@@ -128,14 +139,14 @@ export default function ContactForm() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="message" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <label htmlFor="message" className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">
           Your Message <span className="text-red-500">*</span>
         </label>
         <textarea
           id="message"
           name="message"
           required
-          rows={6}
+          rows={5}
           value={formData.message}
           onChange={handleChange}
           placeholder="Hello Nadia, I would like to invite you for..."
@@ -147,12 +158,12 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={status === 'loading'}
-        className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium shadow-md shadow-purple-900/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        className="w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium shadow-md shadow-purple-900/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
       >
         {status === 'loading' ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            Sending Message...
+            Preparing Message...
           </>
         ) : (
           <>

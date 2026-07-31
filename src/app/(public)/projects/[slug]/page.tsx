@@ -201,9 +201,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           <div className="mt-12 space-y-16 pt-12 border-t border-border">
             {/* Case Study Heading */}
             <ScrollReveal className="text-center max-w-xl mx-auto">
-              <span className="text-xs uppercase tracking-wider font-semibold text-purple-500">Case Study Investigation</span>
-              <h2 className="text-2xl sm:text-3xl font-bold font-heading text-foreground mt-1">
-                Systems & Requirements Analysis
+              <h2 className="text-2xl sm:text-3xl font-bold font-heading text-foreground">
+                Detail
               </h2>
             </ScrollReveal>
 
