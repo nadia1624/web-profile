@@ -1,20 +1,20 @@
 /**
  * Client-side Canvas Image Compressor & Resizer
- * Automatically resizes large camera photos (>2MB) down to optimized JPEG/PNG files
+ * Automatically resizes and compresses photo/diagram uploads (>150KB) down to optimized JPEG/PNG files
  */
 export async function compressImage(
   file: File,
-  maxWidth = 1600,
-  maxHeight = 1600,
-  quality = 0.82
+  maxWidth = 1200,
+  maxHeight = 1200,
+  quality = 0.75
 ): Promise<File> {
   // If file is not an image (e.g. PDF), return original
   if (!file.type.startsWith('image/')) {
     return file;
   }
 
-  // If file size is already small (e.g. under 800KB), return as is
-  if (file.size < 800 * 1024) {
+  // If file size is already very small (under 150KB), return as is
+  if (file.size < 150 * 1024) {
     return file;
   }
 
@@ -76,3 +76,4 @@ export async function compressImage(
     reader.onerror = () => resolve(file);
   });
 }
+

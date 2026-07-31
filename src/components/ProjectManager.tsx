@@ -311,6 +311,29 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
 
     startTransition(async () => {
       let result;
+      const caseStudyPayload = showCaseStudy ? {
+        overview: csOverview || null,
+        background: csBackground || null,
+        problem: csProblem || null,
+        process: csProcess || null,
+        analysis: csAnalysis || null,
+        solution: csSolution || null,
+        design: csDesign || null,
+        development: csDevelopment || null,
+        testing: csTesting || null,
+        result: csResult || null,
+        businessProcess: csBusinessProcess || null,
+        asIsProcess: csAsIsProcess || null,
+        toBeProcess: csToBeProcess || null,
+        requirementsAnalysis: csRequirementsAnalysis || null,
+        bpmn: csBpmn || null,
+        uml: csUml || null,
+        uiUxDesign: csUiUxDesign || null,
+        databaseDesign: csDatabaseDesign || null,
+        applicationScreenshots: csScreenshots,
+        uat: csUat || null,
+      } : null;
+
       const dataPayload = {
         title,
         slug: slug || null,
@@ -324,6 +347,7 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
         thumbnail,
         projectImages: [],
         technologyIds: selectedTechs,
+        caseStudy: caseStudyPayload,
       };
 
       if (editingId) {
@@ -333,39 +357,6 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
       }
 
       if (result.success && result.data) {
-        const projectId = result.data.id;
-        
-        // Save case study details if toggled on
-        if (showCaseStudy) {
-          const caseStudySaveResult = await upsertCaseStudy(projectId, {
-            overview: csOverview || null,
-            background: csBackground || null,
-            problem: csProblem || null,
-            process: csProcess || null,
-            analysis: csAnalysis || null,
-            solution: csSolution || null,
-            design: csDesign || null,
-            development: csDevelopment || null,
-            testing: csTesting || null,
-            result: csResult || null,
-            businessProcess: csBusinessProcess || null,
-            asIsProcess: csAsIsProcess || null,
-            toBeProcess: csToBeProcess || null,
-            requirementsAnalysis: csRequirementsAnalysis || null,
-            bpmn: csBpmn || null,
-            uml: csUml || null,
-            uiUxDesign: csUiUxDesign || null,
-            databaseDesign: csDatabaseDesign || null,
-            applicationScreenshots: csScreenshots,
-            uat: csUat || null,
-          });
-
-          if (!caseStudySaveResult.success) {
-            setToast({ type: 'error', text: 'Project saved, but Case Study failed: ' + caseStudySaveResult.error });
-            return;
-          }
-        }
-
         setToast({ 
           type: 'success', 
           text: editingId ? 'Project & Case Study successfully updated!' : 'Project & Case Study successfully created!' 

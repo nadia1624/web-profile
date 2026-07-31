@@ -95,8 +95,31 @@ export async function getProjectById(id: string) {
   }
 }
 
+export interface CaseStudyInput {
+  overview?: string | null;
+  background?: string | null;
+  problem?: string | null;
+  process?: string | null;
+  analysis?: string | null;
+  solution?: string | null;
+  design?: string | null;
+  development?: string | null;
+  testing?: string | null;
+  result?: string | null;
+  businessProcess?: string | null;
+  asIsProcess?: string | null;
+  toBeProcess?: string | null;
+  requirementsAnalysis?: string | null;
+  bpmn?: string | null;
+  uml?: string | null;
+  uiUxDesign?: string | null;
+  databaseDesign?: string | null;
+  applicationScreenshots?: string[];
+  uat?: string | null;
+}
+
 /**
- * Create a new project record
+ * Create a new project record (and optional Case Study in a single transaction)
  */
 export async function createProject(data: {
   title: string;
@@ -111,6 +134,7 @@ export async function createProject(data: {
   githubUrl?: string | null;
   featured: boolean;
   technologyIds: string[];
+  caseStudy?: CaseStudyInput | null;
 }) {
   const admin = await getCurrentAdmin();
   if (!admin) {
@@ -135,26 +159,58 @@ export async function createProject(data: {
     });
     const displayOrder = lastProj ? lastProj.displayOrder + 1 : 0;
 
-    const project = await prisma.project.create({
-      data: {
-        title: data.title,
-        slug: finalSlug,
-        shortDescription: data.shortDescription,
-        fullDescription: data.fullDescription,
-        category: data.category,
-        role: data.role,
-        thumbnail: data.thumbnail,
-        projectImages: data.projectImages,
-        liveUrl: data.liveUrl,
-        githubUrl: data.githubUrl,
-        featured: data.featured,
-        displayOrder,
-        technologies: {
-          create: data.technologyIds.map((techId) => ({
-            technologyId: techId,
-          })),
+    const project = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const createdProject = await tx.project.create({
+        data: {
+          title: data.title,
+          slug: finalSlug,
+          shortDescription: data.shortDescription,
+          fullDescription: data.fullDescription,
+          category: data.category,
+          role: data.role,
+          thumbnail: data.thumbnail,
+          projectImages: data.projectImages,
+          liveUrl: data.liveUrl,
+          githubUrl: data.githubUrl,
+          featured: data.featured,
+          displayOrder,
+          technologies: {
+            create: data.technologyIds.map((techId) => ({
+              technologyId: techId,
+            })),
+          },
         },
-      },
+      });
+
+      if (data.caseStudy) {
+        await tx.caseStudy.create({
+          data: {
+            projectId: createdProject.id,
+            overview: data.caseStudy.overview || null,
+            background: data.caseStudy.background || null,
+            problem: data.caseStudy.problem || null,
+            process: data.caseStudy.process || null,
+            analysis: data.caseStudy.analysis || null,
+            solution: data.caseStudy.solution || null,
+            design: data.caseStudy.design || null,
+            development: data.caseStudy.development || null,
+            testing: data.caseStudy.testing || null,
+            result: data.caseStudy.result || null,
+            businessProcess: data.caseStudy.businessProcess || null,
+            asIsProcess: data.caseStudy.asIsProcess || null,
+            toBeProcess: data.caseStudy.toBeProcess || null,
+            requirementsAnalysis: data.caseStudy.requirementsAnalysis || null,
+            bpmn: data.caseStudy.bpmn || null,
+            uml: data.caseStudy.uml || null,
+            uiUxDesign: data.caseStudy.uiUxDesign || null,
+            databaseDesign: data.caseStudy.databaseDesign || null,
+            applicationScreenshots: data.caseStudy.applicationScreenshots || [],
+            uat: data.caseStudy.uat || null,
+          },
+        });
+      }
+
+      return createdProject;
     });
 
     return { success: true, data: JSON.parse(JSON.stringify(project)) };
@@ -165,7 +221,7 @@ export async function createProject(data: {
 }
 
 /**
- * Update an existing project record
+ * Update an existing project record (and optional Case Study in a single transaction)
  */
 export async function updateProject(
   id: string,
@@ -182,6 +238,7 @@ export async function updateProject(
     githubUrl?: string | null;
     featured: boolean;
     technologyIds: string[];
+    caseStudy?: CaseStudyInput | null;
   }
 ) {
   const admin = await getCurrentAdmin();
@@ -210,7 +267,7 @@ export async function updateProject(
       finalSlug = existing.slug;
     }
 
-    // Use a transaction to clean and recreate technology relations, and update project details
+    // Use a transaction to clean and recreate technology relations, update project details, and upsert case study
     const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Delete existing relations
       await tx.projectTechnology.deleteMany({
@@ -228,7 +285,7 @@ export async function updateProject(
           : existing.projectImages;
 
       // 2. Update project + recreate relations
-      return tx.project.update({
+      const proj = await tx.project.update({
         where: { id },
         data: {
           title: data.title,
@@ -249,6 +306,82 @@ export async function updateProject(
           },
         },
       });
+
+      // 3. Upsert Case Study if provided
+      if (data.caseStudy) {
+        const existingCs = await tx.caseStudy.findUnique({ where: { projectId: id } });
+
+        const finalBpmn =
+          data.caseStudy.bpmn !== undefined && data.caseStudy.bpmn !== null && data.caseStudy.bpmn !== ''
+            ? data.caseStudy.bpmn
+            : (existingCs?.bpmn || null);
+
+        const finalUml =
+          data.caseStudy.uml !== undefined && data.caseStudy.uml !== null && data.caseStudy.uml !== ''
+            ? data.caseStudy.uml
+            : (existingCs?.uml || null);
+
+        const finalDbDesign =
+          data.caseStudy.databaseDesign !== undefined && data.caseStudy.databaseDesign !== null && data.caseStudy.databaseDesign !== ''
+            ? data.caseStudy.databaseDesign
+            : (existingCs?.databaseDesign || null);
+
+        const finalScreenshots =
+          data.caseStudy.applicationScreenshots && data.caseStudy.applicationScreenshots.length > 0
+            ? data.caseStudy.applicationScreenshots
+            : (existingCs?.applicationScreenshots || []);
+
+        await tx.caseStudy.upsert({
+          where: { projectId: id },
+          update: {
+            overview: data.caseStudy.overview || null,
+            background: data.caseStudy.background || null,
+            problem: data.caseStudy.problem || null,
+            process: data.caseStudy.process || null,
+            analysis: data.caseStudy.analysis || null,
+            solution: data.caseStudy.solution || null,
+            design: data.caseStudy.design || null,
+            development: data.caseStudy.development || null,
+            testing: data.caseStudy.testing || null,
+            result: data.caseStudy.result || null,
+            businessProcess: data.caseStudy.businessProcess || null,
+            asIsProcess: data.caseStudy.asIsProcess || null,
+            toBeProcess: data.caseStudy.toBeProcess || null,
+            requirementsAnalysis: data.caseStudy.requirementsAnalysis || null,
+            bpmn: finalBpmn,
+            uml: finalUml,
+            uiUxDesign: data.caseStudy.uiUxDesign || null,
+            databaseDesign: finalDbDesign,
+            applicationScreenshots: finalScreenshots,
+            uat: data.caseStudy.uat || null,
+          },
+          create: {
+            projectId: id,
+            overview: data.caseStudy.overview || null,
+            background: data.caseStudy.background || null,
+            problem: data.caseStudy.problem || null,
+            process: data.caseStudy.process || null,
+            analysis: data.caseStudy.analysis || null,
+            solution: data.caseStudy.solution || null,
+            design: data.caseStudy.design || null,
+            development: data.caseStudy.development || null,
+            testing: data.caseStudy.testing || null,
+            result: data.caseStudy.result || null,
+            businessProcess: data.caseStudy.businessProcess || null,
+            asIsProcess: data.caseStudy.asIsProcess || null,
+            toBeProcess: data.caseStudy.toBeProcess || null,
+            requirementsAnalysis: data.caseStudy.requirementsAnalysis || null,
+            bpmn: data.caseStudy.bpmn || null,
+            uml: data.caseStudy.uml || null,
+            uiUxDesign: data.caseStudy.uiUxDesign || null,
+            databaseDesign: data.caseStudy.databaseDesign || null,
+            applicationScreenshots: data.caseStudy.applicationScreenshots || [],
+            uat: data.caseStudy.uat || null,
+          },
+        });
+      }
+
+      return proj;
     });
 
     return { success: true, data: JSON.parse(JSON.stringify(updated)) };
