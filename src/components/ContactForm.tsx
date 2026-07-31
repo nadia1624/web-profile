@@ -44,7 +44,7 @@ export default function ContactForm() {
       }
 
       // 2. Open mailto trigger as fallback to launch email client to target email
-      const mailtoUrl = `mailto:nadiadearihanifah@gmail.com?subject=${encodeURIComponent(
+      const mailtoUrl = `mailto:nadyadearihanifah@gmail.com?subject=${encodeURIComponent(
         formData.subject || `Portfolio Message from ${formData.name}`
       )}&body=${encodeURIComponent(
         `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
@@ -76,7 +76,7 @@ export default function ContactForm() {
         </div>
         <h3 className="text-lg sm:text-xl font-bold font-heading text-foreground">Message Sent & Saved!</h3>
         <p className="text-muted-foreground text-xs sm:text-sm mt-3 max-w-sm leading-relaxed">
-          Terima kasih! Pesan Anda telah **tersimpan aman di Database** dan diteruskan ke email <strong className="text-purple-500">nadiadearihanifah@gmail.com</strong>.
+          Terima kasih! Pesan Anda telah **tersimpan aman di Database** dan diteruskan ke email <strong className="text-purple-500">nadyadearihanifah@gmail.com</strong>.
         </p>
         <button
           onClick={() => setStatus('idle')}

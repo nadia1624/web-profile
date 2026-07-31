@@ -18,7 +18,8 @@ import {
   LogOut,
   ChevronRight,
   Menu,
-  X
+  X,
+  Mail
 } from 'lucide-react';
 
 export default function AdminSidebar() {
@@ -36,6 +37,7 @@ export default function AdminSidebar() {
     { name: 'Technologies', href: '/admin/technologies', icon: Code2 },
     { name: 'Education', href: '/admin/education', icon: GraduationCap },
     { name: 'Certifications', href: '/admin/certifications', icon: Award },
+    { name: 'Messages', href: '/admin/messages', icon: Mail },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
