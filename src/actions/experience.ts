@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { getCurrentAdmin } from './auth';
+import { sanitizeImageUrl } from '@/lib/cloudinary';
 
 import { cache } from 'react';
 
@@ -62,6 +63,7 @@ export async function createExperience(data: {
     }
 
     const parsedEndDate = data.isCurrent ? null : parseSafeDate(data.endDate);
+    const finalLogo = await sanitizeImageUrl(data.companyLogo, 'portfolio/experiences');
 
     const experience = await prisma.experience.create({
       data: {
@@ -75,7 +77,7 @@ export async function createExperience(data: {
         description: data.description,
         responsibilities: data.responsibilities,
         technologies: data.technologies,
-        companyLogo: data.companyLogo,
+        companyLogo: finalLogo,
         displayOrder,
       },
     });
@@ -134,10 +136,12 @@ export async function updateExperience(
 
     const parsedEndDate = data.isCurrent ? null : parseSafeDate(data.endDate);
 
-    const finalLogo =
+    const rawLogo =
       data.companyLogo !== undefined && data.companyLogo !== null && data.companyLogo !== ''
         ? data.companyLogo
         : existing.companyLogo;
+
+    const finalLogo = await sanitizeImageUrl(rawLogo, 'portfolio/experiences');
 
     const updated = await prisma.experience.update({
       where: { id },

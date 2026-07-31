@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { getCurrentAdmin } from './auth';
+import { sanitizeImageUrl } from '@/lib/cloudinary';
 
 import { cache } from 'react';
 
@@ -39,6 +40,7 @@ export async function createCertification(data: {
   }
 
   try {
+    const finalImage = await sanitizeImageUrl(data.certificateImage, 'portfolio/certifications');
     const cert = await prisma.certification.create({
       data: {
         name: data.name,
@@ -46,7 +48,7 @@ export async function createCertification(data: {
         issueDate: new Date(data.issueDate),
         credentialId: data.credentialId,
         credentialUrl: data.credentialUrl,
-        certificateImage: data.certificateImage,
+        certificateImage: finalImage,
         type: data.type || 'Certification',
         description: data.description,
       },
@@ -86,10 +88,12 @@ export async function updateCertification(
       return { success: false, error: 'Certification not found.' };
     }
 
-    const finalImage =
+    const rawImage =
       data.certificateImage !== undefined && data.certificateImage !== null && data.certificateImage !== ''
         ? data.certificateImage
         : existing.certificateImage;
+
+    const finalImage = await sanitizeImageUrl(rawImage, 'portfolio/certifications');
 
     const updated = await prisma.certification.update({
       where: { id },
