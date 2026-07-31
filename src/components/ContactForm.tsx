@@ -32,8 +32,8 @@ export default function ContactForm() {
       // 1. Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-      // 2. Direct mailto launch to target email address: nadiadearihanifah@gmail.com
-      const mailtoUrl = `mailto:nadiadearihanifah@gmail.com?subject=${encodeURIComponent(
+      // 2. Direct mailto launch to target email address: nadyadearihanifah@gmail.com
+      const mailtoUrl = `mailto:nadyadearihanifah@gmail.com?subject=${encodeURIComponent(
         formData.subject || `Portfolio Message from ${formData.name}`
       )}&body=${encodeURIComponent(
         `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
@@ -61,7 +61,7 @@ export default function ContactForm() {
         </div>
         <h3 className="text-lg sm:text-xl font-bold font-heading text-foreground">Message Ready to Send!</h3>
         <p className="text-muted-foreground text-xs sm:text-sm mt-3 max-w-sm leading-relaxed">
-          Pesan Anda telah disiapkan dan diarahkan langsung ke email <strong className="text-purple-500">nadiadearihanifah@gmail.com</strong>.
+          Pesan Anda telah disiapkan dan diarahkan langsung ke email <strong className="text-purple-500">nadyadearihanifah@gmail.com</strong>.
         </p>
         <button
           onClick={() => setStatus('idle')}

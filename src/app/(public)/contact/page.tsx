@@ -8,7 +8,7 @@ export const revalidate = 60; // ISR: revalidate every 60 seconds
 export default async function ContactPage() {
   const profile = await getProfile();
 
-  const email = profile?.email || 'nadiadearihanifah@gmail.com';
+  const email = profile?.email || 'nadyadearihanifah@gmail.com';
   const phone = profile?.phone || '+62 822-8888-8888';
   const location = profile?.location || 'Padang, West Sumatra, Indonesia';
   const linkedinUrl = profile?.linkedinUrl || 'https://linkedin.com';
