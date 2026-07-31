@@ -105,15 +105,16 @@ export default function Navbar({ cvUrl }: NavbarProps) {
           {/* Theme Toggle & CV Button (Desktop) */}
           <div className="hidden md:flex items-center gap-4">
             <ThemeToggle />
-            <button
-              onClick={handleDownloadCV}
+            <a
+              href="/api/download-cv"
+              download="CV_Nadia_Deari_Hanifah.pdf"
               className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-full bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-900/20 hover:shadow-purple-700/30 transition-all active:scale-95 cursor-pointer"
             >
               <Download className="w-4 h-4" />
               Download CV
-            </button>
+            </a>
           </div>
- 
+
           {/* Mobile Menu Actions */}
           <div className="md:hidden flex items-center gap-3">
             <ThemeToggle />
@@ -177,16 +178,15 @@ export default function Navbar({ cvUrl }: NavbarProps) {
               transition={{ delay: 0.3 }}
               className="w-full mt-auto"
             >
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  handleDownloadCV();
-                }}
+              <a
+                href="/api/download-cv"
+                download="CV_Nadia_Deari_Hanifah.pdf"
+                onClick={() => setIsOpen(false)}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-500 active:scale-95 transition-all cursor-pointer shadow-lg shadow-purple-900/30 light:shadow-purple-400/20"
               >
                 <Download className="w-5 h-5" />
                 Download CV
-              </button>
+              </a>
             </motion.div>
           </motion.div>
         )}
