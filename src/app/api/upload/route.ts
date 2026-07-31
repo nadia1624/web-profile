@@ -78,9 +78,9 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // 7a. Try Cloudinary upload first (works on Vercel / serverless)
-    if (process.env.CLOUDINARY_URL) {
+    const { uploadToCloudinary, isCloudinaryConfigured } = await import('@/lib/cloudinary');
+    if (isCloudinaryConfigured()) {
       try {
-        const { uploadToCloudinary } = await import('@/lib/cloudinary');
         const folder = isDocument ? 'portfolio/documents' : 'portfolio/images';
         const cloudUrl = await uploadToCloudinary(buffer, folder, file.type || 'image/webp');
         return NextResponse.json({

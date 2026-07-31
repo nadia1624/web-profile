@@ -3,12 +3,29 @@
  * Used as cloud storage to avoid EROFS on serverless (Vercel).
  */
 
+// Clean up invalid or empty CLOUDINARY_URL from process.env BEFORE importing the SDK
+// so Cloudinary's internal module initializer won't throw "Invalid CLOUDINARY_URL protocol".
+if (
+  process.env.CLOUDINARY_URL !== undefined &&
+  (!process.env.CLOUDINARY_URL || !process.env.CLOUDINARY_URL.trim().startsWith('cloudinary://'))
+) {
+  delete process.env.CLOUDINARY_URL;
+}
+
 import { v2 as cloudinary } from 'cloudinary';
 
-// Initialize Cloudinary using environment variable CLOUDINARY_URL
-// Format: cloudinary://api_key:api_secret@cloud_name
-if (process.env.CLOUDINARY_URL) {
-  cloudinary.config({ secure: true });
+// Check if Cloudinary environment variable is properly formatted
+export function isCloudinaryConfigured(): boolean {
+  const envUrl = process.env.CLOUDINARY_URL;
+  return typeof envUrl === 'string' && envUrl.trim().startsWith('cloudinary://');
+}
+
+if (isCloudinaryConfigured()) {
+  try {
+    cloudinary.config({ secure: true });
+  } catch (err) {
+    console.warn('Cloudinary config error:', err);
+  }
 }
 
 export { cloudinary };
@@ -24,8 +41,8 @@ export async function uploadToCloudinary(
   folder: string = 'portfolio',
   mimeType: string = 'image/webp'
 ): Promise<string> {
-  if (!process.env.CLOUDINARY_URL) {
-    throw new Error('CLOUDINARY_URL environment variable is not set.');
+  if (!isCloudinaryConfigured()) {
+    throw new Error('CLOUDINARY_URL environment variable is not configured with a valid cloudinary:// URL.');
   }
 
   const resourceType = mimeType.startsWith('image/') ? 'image' : 'raw';
@@ -80,7 +97,7 @@ export async function sanitizeImageUrl(
   // If it's a Base64 Data URL
   if (trimmed.startsWith('data:')) {
     // 1. If Cloudinary is configured, upload the Base64 Data URL directly to Cloudinary
-    if (process.env.CLOUDINARY_URL) {
+    if (isCloudinaryConfigured()) {
       try {
         const res = await cloudinary.uploader.upload(trimmed, {
           folder,
