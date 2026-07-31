@@ -302,6 +302,10 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
 
     startTransition(async () => {
       let result;
+      // Helper to ensure raw Base64 data URLs are not sent over Server Action bridge
+      const safeUrl = (url: string | null | undefined) => (url && typeof url === 'string' && !url.startsWith('data:') ? url : null);
+      const safeUrls = (urls: string[]) => (Array.isArray(urls) ? urls.filter((u) => u && typeof u === 'string' && !u.startsWith('data:')) : []);
+
       const caseStudyPayload = showCaseStudy ? {
         overview: csOverview || null,
         background: csBackground || null,
@@ -317,11 +321,11 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
         asIsProcess: csAsIsProcess || null,
         toBeProcess: csToBeProcess || null,
         requirementsAnalysis: csRequirementsAnalysis || null,
-        bpmn: csBpmn || null,
-        uml: csUml || null,
+        bpmn: safeUrl(csBpmn),
+        uml: safeUrl(csUml),
         uiUxDesign: csUiUxDesign || null,
-        databaseDesign: csDatabaseDesign || null,
-        applicationScreenshots: csScreenshots,
+        databaseDesign: safeUrl(csDatabaseDesign),
+        applicationScreenshots: safeUrls(csScreenshots),
         uat: csUat || null,
       } : null;
 
@@ -335,7 +339,7 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
         liveUrl: liveUrl || null,
         githubUrl: githubUrl || null,
         featured,
-        thumbnail,
+        thumbnail: safeUrl(thumbnail),
         projectImages: [],
         technologyIds: selectedTechs,
         caseStudy: caseStudyPayload,
