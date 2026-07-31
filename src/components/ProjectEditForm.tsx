@@ -16,10 +16,12 @@ import {
   Image as ImageIcon,
   BookOpen,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Trash2
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { uploadImageFile } from '@/lib/upload-helper';
 
 interface TechProps {
   id: string;
@@ -129,21 +131,9 @@ export default function ProjectEditForm({ project, allTechnologies }: ProjectEdi
     techsByCategory[tech.category].push(tech);
   });
 
-  const uploadFile = async (file: File) => {
-    const data = new FormData();
-    data.append('file', file);
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: data,
-    });
-    if (!res.ok) throw new Error('Upload failed');
-    const result = await res.json();
-    return result.url;
-  };
-
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    setter: (url: string) => void,
+    setter: (url: string | null) => void,
     loader: (loading: boolean) => void
   ) => {
     const file = e.target.files?.[0];
@@ -151,12 +141,14 @@ export default function ProjectEditForm({ project, allTechnologies }: ProjectEdi
 
     loader(true);
     try {
-      const url = await uploadFile(file);
+      const url = await uploadImageFile(file);
       setter(url);
-    } catch (err) {
-      alert('Failed to upload file.');
+      setToast({ type: 'success', text: 'Gambar berhasil diunggah!' });
+    } catch (err: any) {
+      setToast({ type: 'error', text: err.message || 'Gagal mengunggah file gambar.' });
     } finally {
       loader(false);
+      e.target.value = '';
     }
   };
 
@@ -168,14 +160,16 @@ export default function ProjectEditForm({ project, allTechnologies }: ProjectEdi
     try {
       const urls: string[] = [];
       for (let i = 0; i < files.length; i++) {
-        const url = await uploadFile(files[i]);
+        const url = await uploadImageFile(files[i]);
         urls.push(url);
       }
-      setCsScreenshots([...csScreenshots, ...urls]);
-    } catch (err) {
-      alert('Failed to upload screenshots.');
+      setCsScreenshots((prev) => [...prev, ...urls]);
+      setToast({ type: 'success', text: `${urls.length} gambar screenshot berhasil diunggah!` });
+    } catch (err: any) {
+      setToast({ type: 'error', text: err.message || 'Gagal mengunggah screenshot.' });
     } finally {
       setIsUploadingScreen(false);
+      e.target.value = '';
     }
   };
 
@@ -198,6 +192,29 @@ export default function ProjectEditForm({ project, allTechnologies }: ProjectEdi
     }
 
     startTransition(async () => {
+      const caseStudyPayload = showCaseStudy ? {
+        overview: csOverview || null,
+        background: csBackground || null,
+        problem: csProblem || null,
+        process: csProcess || null,
+        analysis: csAnalysis || null,
+        solution: csSolution || null,
+        design: csDesign || null,
+        development: csDevelopment || null,
+        testing: csTesting || null,
+        result: csResult || null,
+        businessProcess: csBusinessProcess || null,
+        asIsProcess: csAsIsProcess || null,
+        toBeProcess: csToBeProcess || null,
+        requirementsAnalysis: csRequirementsAnalysis || null,
+        bpmn: csBpmn || null,
+        uml: csUml || null,
+        uiUxDesign: csUiUxDesign || null,
+        databaseDesign: csDatabaseDesign || null,
+        applicationScreenshots: csScreenshots,
+        uat: csUat || null,
+      } : null;
+
       const result = await updateProject(project.id, {
         title,
         slug: slug || null,
@@ -211,39 +228,10 @@ export default function ProjectEditForm({ project, allTechnologies }: ProjectEdi
         thumbnail,
         projectImages: [],
         technologyIds: selectedTechs,
+        caseStudy: caseStudyPayload,
       });
 
       if (result.success) {
-        if (showCaseStudy) {
-          const caseStudySaveResult = await upsertCaseStudy(project.id, {
-            overview: csOverview || null,
-            background: csBackground || null,
-            problem: csProblem || null,
-            process: csProcess || null,
-            analysis: csAnalysis || null,
-            solution: csSolution || null,
-            design: csDesign || null,
-            development: csDevelopment || null,
-            testing: csTesting || null,
-            result: csResult || null,
-            businessProcess: csBusinessProcess || null,
-            asIsProcess: csAsIsProcess || null,
-            toBeProcess: csToBeProcess || null,
-            requirementsAnalysis: csRequirementsAnalysis || null,
-            bpmn: csBpmn || null,
-            uml: csUml || null,
-            uiUxDesign: csUiUxDesign || null,
-            databaseDesign: csDatabaseDesign || null,
-            applicationScreenshots: csScreenshots,
-            uat: csUat || null,
-          });
-
-          if (!caseStudySaveResult.success) {
-            setToast({ type: 'error', text: 'Project updated, but Case Study failed: ' + caseStudySaveResult.error });
-            return;
-          }
-        }
-
         setToast({ type: 'success', text: 'Project & Case study updated successfully!' });
         router.refresh();
         setTimeout(() => {
@@ -300,17 +288,29 @@ export default function ProjectEditForm({ project, allTechnologies }: ProjectEdi
               )}
             </div>
 
-            <label className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-bold text-zinc-300 hover:text-white transition-all cursor-pointer">
-              <Upload className="w-3.5 h-3.5" />
-              Upload Image
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileUpload(e, setThumbnail, setIsUploadingThumb)}
-                className="hidden"
-                disabled={isUploadingThumb}
-              />
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-bold text-zinc-300 hover:text-white transition-all cursor-pointer">
+                {isUploadingThumb ? <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" /> : <Upload className="w-3.5 h-3.5" />}
+                {thumbnail ? 'Ganti Gambar' : 'Upload Image'}
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                  onChange={(e) => handleFileUpload(e, setThumbnail, setIsUploadingThumb)}
+                  className="hidden"
+                  disabled={isUploadingThumb}
+                />
+              </label>
+              {thumbnail && (
+                <button
+                  type="button"
+                  onClick={() => setThumbnail(null)}
+                  className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                  title="Hapus Gambar"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Associated Tech */}

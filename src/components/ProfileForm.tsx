@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { updateProfile } from '@/actions/profile';
-import { Upload, Loader2, Save, AlertCircle, CheckCircle, Image as ImageIcon, FileText } from 'lucide-react';
+import { Upload, Loader2, Save, AlertCircle, CheckCircle, Image as ImageIcon, FileText, Trash2 } from 'lucide-react';
 import Image from 'next/image';
+import { uploadImageFile } from '@/lib/upload-helper';
 
 interface ProfileProps {
   id: string;
@@ -62,35 +63,18 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError('Image size must be less than 5MB.');
-      return;
-    }
-
     setIsUploadingImage(true);
     setUploadError(null);
 
-    const data = new FormData();
-    data.append('file', file);
-
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: data,
-      });
-
-      const result = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(result.error || 'Failed to upload image.');
-      }
-
-      setProfileImage(result.url);
+      const url = await uploadImageFile(file);
+      setProfileImage(url);
+      setMessage({ type: 'success', text: 'Foto profil berhasil diunggah!' });
     } catch (err: any) {
-      setUploadError(err.message || 'Failed to upload image. Please try again.');
+      setUploadError(err.message || 'Gagal mengunggah foto profil. Silakan coba lagi.');
     } finally {
       setIsUploadingImage(false);
+      e.target.value = '';
     }
   };
 
@@ -102,25 +86,15 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
     setIsUploadingCV(true);
     setUploadError(null);
 
-    const data = new FormData();
-    data.append('file', file);
-
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: data,
-      });
-
-      if (!res.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const result = await res.json();
-      setCvUrl(result.url);
+      const url = await uploadImageFile(file);
+      setCvUrl(url);
+      setMessage({ type: 'success', text: 'File CV berhasil diunggah!' });
     } catch (err: any) {
-      setUploadError('Failed to upload CV file. Please try again.');
+      setUploadError(err.message || 'Gagal mengunggah file CV. Silakan coba lagi.');
     } finally {
       setIsUploadingCV(false);
+      e.target.value = '';
     }
   };
 
@@ -187,17 +161,29 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
               )}
             </div>
 
-            <label className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer">
-              <Upload className="w-3.5 h-3.5" />
-              Upload Image
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-                disabled={isUploadingImage}
-              />
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer">
+                {isUploadingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" /> : <Upload className="w-3.5 h-3.5" />}
+                {profileImage ? 'Ganti Foto' : 'Upload Image'}
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={isUploadingImage}
+                />
+              </label>
+              {profileImage && (
+                <button
+                  type="button"
+                  onClick={() => setProfileImage(null)}
+                  className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                  title="Hapus Foto Profil"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Curriculum Vitae (CV) Card */}
@@ -218,17 +204,29 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
               </div>
             </div>
 
-            <label className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer">
-              {isUploadingCV ? <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" /> : <Upload className="w-3.5 h-3.5" />}
-              {cvUrl ? 'Replace CV File' : 'Upload CV File'}
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={handleCVUpload}
-                className="hidden"
-                disabled={isUploadingCV}
-              />
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer">
+                {isUploadingCV ? <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" /> : <Upload className="w-3.5 h-3.5" />}
+                {cvUrl ? 'Ganti CV' : 'Upload CV File'}
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleCVUpload}
+                  className="hidden"
+                  disabled={isUploadingCV}
+                />
+              </label>
+              {cvUrl && (
+                <button
+                  type="button"
+                  onClick={() => setCvUrl(null)}
+                  className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                  title="Hapus File CV"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

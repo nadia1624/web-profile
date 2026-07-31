@@ -27,7 +27,7 @@ import {
 import Image from 'next/image';
 
 import { useRouter } from 'next/navigation';
-import { compressImage } from '@/lib/image-compressor';
+import { uploadImageFile } from '@/lib/upload-helper';
 
 interface ExperienceProps {
   id: string;
@@ -131,26 +131,14 @@ export default function ExperienceManager({ experiences }: ExperienceManagerProp
 
     setIsUploadingLogo(true);
     try {
-      const file = await compressImage(rawFile);
-      const data = new FormData();
-      data.append('file', file);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: data,
-      });
-
-      const result = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(result.error || 'Failed to upload company logo.');
-      }
-
-      setCompanyLogo(result.url);
+      const url = await uploadImageFile(rawFile);
+      setCompanyLogo(url);
+      setToast({ type: 'success', text: 'Logo perusahaan berhasil diunggah!' });
     } catch (err: any) {
-      alert(err.message || 'Failed to upload company logo.');
+      setToast({ type: 'error', text: err.message || 'Gagal mengunggah logo perusahaan.' });
     } finally {
       setIsUploadingLogo(false);
+      e.target.value = '';
     }
   };
 
@@ -328,17 +316,29 @@ export default function ExperienceManager({ experiences }: ExperienceManagerProp
                 )}
               </div>
 
-              <label className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-bold text-zinc-300 hover:text-white transition-all cursor-pointer">
-                <Upload className="w-3.5 h-3.5" />
-                Upload Image
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="hidden"
-                  disabled={isUploadingLogo}
-                />
-              </label>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-bold text-zinc-300 hover:text-white transition-all cursor-pointer">
+                  {isUploadingLogo ? <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" /> : <Upload className="w-3.5 h-3.5" />}
+                  {companyLogo ? 'Ganti Logo' : 'Upload Image'}
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                    disabled={isUploadingLogo}
+                  />
+                </label>
+                {companyLogo && (
+                  <button
+                    type="button"
+                    onClick={() => setCompanyLogo(null)}
+                    className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                    title="Hapus Logo"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Info Right Column */}

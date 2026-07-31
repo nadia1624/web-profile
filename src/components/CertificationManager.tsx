@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { compressImage } from '@/lib/image-compressor';
+import { uploadImageFile } from '@/lib/upload-helper';
 
 interface CertificationProps {
   id: string;
@@ -99,26 +99,14 @@ export default function CertificationManager({ certifications }: CertificationMa
 
     setIsUploadingImg(true);
     try {
-      const file = await compressImage(rawFile);
-      const data = new FormData();
-      data.append('file', file);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: data,
-      });
-
-      const result = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(result.error || 'Upload failed');
-      }
-
-      setCertificateImage(result.url);
+      const url = await uploadImageFile(rawFile);
+      setCertificateImage(url);
+      setToast({ type: 'success', text: 'Gambar sertifikat berhasil diunggah!' });
     } catch (err: any) {
-      alert(err.message || 'Failed to upload certificate image.');
+      setToast({ type: 'error', text: err.message || 'Gagal mengunggah gambar sertifikat.' });
     } finally {
       setIsUploadingImg(false);
+      e.target.value = '';
     }
   };
 
@@ -238,17 +226,29 @@ export default function CertificationManager({ certifications }: CertificationMa
                 )}
               </div>
 
-              <label className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-bold text-zinc-300 hover:text-white transition-all cursor-pointer">
-                <Upload className="w-3.5 h-3.5" />
-                Upload Image
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={isUploadingImg}
-                />
-              </label>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-bold text-zinc-300 hover:text-white transition-all cursor-pointer">
+                  {isUploadingImg ? <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" /> : <Upload className="w-3.5 h-3.5" />}
+                  {certificateImage ? 'Ganti Gambar' : 'Upload Image'}
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={isUploadingImg}
+                  />
+                </label>
+                {certificateImage && (
+                  <button
+                    type="button"
+                    onClick={() => setCertificateImage(null)}
+                    className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                    title="Hapus Gambar"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Right: Info fields */}

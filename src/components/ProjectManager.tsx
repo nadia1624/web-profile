@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { compressImage } from '@/lib/image-compressor';
+import { uploadImageFile } from '@/lib/upload-helper';
 
 interface TechProps {
   id: string;
@@ -240,22 +240,9 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
   };
 
   // Upload helpers
-  const uploadFile = async (rawFile: File) => {
-    const file = await compressImage(rawFile);
-    const data = new FormData();
-    data.append('file', file);
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: data,
-    });
-    const result = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(result.error || 'Upload failed');
-    return result.url;
-  };
-
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    setter: (url: string) => void,
+    setter: (url: string | null) => void,
     loader: (loading: boolean) => void
   ) => {
     const file = e.target.files?.[0];
@@ -263,12 +250,14 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
 
     loader(true);
     try {
-      const url = await uploadFile(file);
+      const url = await uploadImageFile(file);
       setter(url);
+      setToast({ type: 'success', text: 'Gambar berhasil diunggah!' });
     } catch (err: any) {
-      alert(err.message || 'Failed to upload file.');
+      setToast({ type: 'error', text: err.message || 'Gagal mengunggah file gambar.' });
     } finally {
       loader(false);
+      e.target.value = '';
     }
   };
 
@@ -280,14 +269,16 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
     try {
       const urls: string[] = [];
       for (let i = 0; i < files.length; i++) {
-        const url = await uploadFile(files[i]);
+        const url = await uploadImageFile(files[i]);
         urls.push(url);
       }
       setCsScreenshots((prev) => [...prev, ...urls]);
+      setToast({ type: 'success', text: `${urls.length} gambar screenshot berhasil diunggah!` });
     } catch (err: any) {
-      alert(err.message || 'Failed to upload screenshots.');
+      setToast({ type: 'error', text: err.message || 'Gagal mengunggah screenshot.' });
     } finally {
       setIsUploadingScreen(false);
+      e.target.value = '';
     }
   };
 
@@ -488,17 +479,29 @@ export default function ProjectManager({ projects, allTechnologies }: ProjectMan
                   )}
                 </div>
 
-                <label className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-bold text-zinc-300 hover:text-white transition-all cursor-pointer">
-                  <Upload className="w-3.5 h-3.5" />
-                  Upload Image
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileUpload(e, setThumbnail, setIsUploadingThumb)}
-                    className="hidden"
-                    disabled={isUploadingThumb}
-                  />
-                </label>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-[10px] font-bold text-zinc-300 hover:text-white transition-all cursor-pointer">
+                    {isUploadingThumb ? <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" /> : <Upload className="w-3.5 h-3.5" />}
+                    {thumbnail ? 'Ganti Gambar' : 'Upload Image'}
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                      onChange={(e) => handleFileUpload(e, setThumbnail, setIsUploadingThumb)}
+                      className="hidden"
+                      disabled={isUploadingThumb}
+                    />
+                  </label>
+                  {thumbnail && (
+                    <button
+                      type="button"
+                      onClick={() => setThumbnail(null)}
+                      className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                      title="Hapus Gambar"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Technologies Checkboxes grouped by category */}
